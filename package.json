@@ -8,7 +8,8 @@
     "dev:full": "concurrently \"npm run dev\" \"node server/websocket.js\"",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "start": "node server/websocket.js"
   },
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
