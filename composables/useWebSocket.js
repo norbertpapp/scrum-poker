@@ -3,6 +3,7 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 export const useWebSocket = () => {
   const ws = ref(null)
   const connected = ref(false)
+  const pings = ref([])
   const gameState = reactive({
     roomJoined: false,
     roomCode: '',
@@ -72,6 +73,9 @@ export const useWebSocket = () => {
       case 'ROOM_STATE':
         updateGameState(message.data)
         break
+      case 'PING_RECEIVED':
+        handlePingReceived(message.data)
+        break
     }
   }
 
@@ -81,6 +85,20 @@ export const useWebSocket = () => {
     gameState.currentStory = data.currentStory
     gameState.votesRevealed = data.votesRevealed
     gameState.roomJoined = true
+  }
+
+  const handlePingReceived = (data) => {
+    pings.value.push({
+      id: Date.now() + Math.random(),
+      emoji: data.emoji,
+      fromPlayer: data.fromPlayer,
+      timestamp: data.timestamp
+    })
+    
+    // Remove ping after 3 seconds
+    setTimeout(() => {
+      pings.value = pings.value.filter(ping => ping.timestamp !== data.timestamp)
+    }, 3000)
   }
 
   // Room actions
@@ -117,6 +135,9 @@ export const useWebSocket = () => {
     sendMessage('UPDATE_STORY', { story })
   }
 
+  const sendPing = (emoji) => {
+    sendMessage('SEND_PING', { emoji })
+  }
   onMounted(() => {
     if (process.client) {
       connect()
@@ -130,12 +151,14 @@ export const useWebSocket = () => {
   return {
     connected,
     gameState,
+    pings,
     joinRoom,
     leaveRoom,
     vote,
     clearVote,
     revealVotes,
     resetVotes,
-    updateStory
+    updateStory,
+    sendPing
   }
 }

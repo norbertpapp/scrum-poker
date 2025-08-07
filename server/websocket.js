@@ -52,6 +52,9 @@ class ScrumPokerServer {
       case 'CLEAR_VOTE':
         this.handleClearVote(ws, message);
         break;
+      case 'SEND_PING':
+        this.handleSendPing(ws, message);
+        break;
     }
   }
   
@@ -108,6 +111,32 @@ class ScrumPokerServer {
     
     this.clients.delete(ws);
     console.log(`${playerName} left room ${roomCode}`);
+  }
+  
+  handleSendPing(ws, message) {
+    const clientInfo = this.clients.get(ws);
+    if (!clientInfo) return;
+    
+    const { roomCode, playerName } = clientInfo;
+    const room = this.rooms.get(roomCode);
+    
+    if (room) {
+      const pingMessage = {
+        type: 'PING_RECEIVED',
+        data: {
+          emoji: message.data.emoji,
+          fromPlayer: playerName,
+          timestamp: Date.now()
+        }
+      };
+      
+      // Send ping to all participants in the room
+      room.participants.forEach(participant => {
+        if (participant.ws.readyState === 1) { // WebSocket.OPEN
+          participant.ws.send(JSON.stringify(pingMessage));
+        }
+      });
+    }
   }
   
   handleVote(ws, message) {

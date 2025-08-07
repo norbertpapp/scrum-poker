@@ -179,6 +179,34 @@
         >
           Clear Selection
         </button>
+        
+        <!-- Emoji Ping Button -->
+        <div class="relative">
+          <button
+            @click="showEmojiPicker = !showEmojiPicker"
+            class="btn-secondary py-3 px-4 text-lg"
+            title="Send emoji ping"
+          >
+            😊
+          </button>
+          
+          <!-- Emoji Picker -->
+          <div
+            v-if="showEmojiPicker"
+            class="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50"
+          >
+            <div class="grid grid-cols-4 gap-2">
+              <button
+                v-for="emoji in emojiOptions"
+                :key="emoji"
+                @click="handleSendPing(emoji)"
+                class="w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center text-xl transition-colors duration-200"
+              >
+                {{ emoji }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Results -->
@@ -200,6 +228,24 @@
         </div>
       </div>
     </div>
+    
+    <!-- Floating Pings -->
+    <div class="fixed inset-0 pointer-events-none z-50">
+      <div
+        v-for="ping in pings"
+        :key="ping.id"
+        class="absolute animate-ping-float"
+        :style="{
+          left: Math.random() * 80 + 10 + '%',
+          top: Math.random() * 60 + 20 + '%'
+        }"
+      >
+        <div class="bg-white rounded-full shadow-lg px-3 py-2 flex items-center space-x-2">
+          <span class="text-2xl">{{ ping.emoji }}</span>
+          <span class="text-sm font-medium text-gray-700">{{ ping.fromPlayer }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -208,7 +254,7 @@ import { ref, computed, watch } from 'vue'
 import { useWebSocket } from '~/composables/useWebSocket'
 
 // WebSocket connection
-const { connected, gameState, joinRoom, leaveRoom, vote, clearVote, revealVotes, resetVotes, updateStory } = useWebSocket()
+const { connected, gameState, pings, joinRoom, leaveRoom, vote, clearVote, revealVotes, resetVotes, updateStory, sendPing } = useWebSocket()
 
 // Player data
 const playerName = ref('')
@@ -216,6 +262,10 @@ const roomCode = ref('')
 const selectedCard = ref(null)
 const currentStory = ref('')
 const playerId = ref(Date.now().toString())
+
+// Emoji ping data
+const showEmojiPicker = ref(false)
+const emojiOptions = ['👍', '👎', '🤔', '😄', '😮', '🎉', '⚡', '🔥', '💡', '❤️', '👏', '🚀']
 
 // Sync current story with game state
 watch(() => gameState.currentStory, (newStory) => {
@@ -312,5 +362,10 @@ const copyRoomCode = async () => {
   } catch (err) {
     console.error('Failed to copy room code:', err)
   }
+}
+
+const handleSendPing = (emoji) => {
+  sendPing(emoji)
+  showEmojiPicker.value = false
 }
 </script>
