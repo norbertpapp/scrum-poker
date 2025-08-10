@@ -9,7 +9,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "start": "node server/websocket.js"
+    "start": "concurrently \"nuxt preview\" \"node server/websocket.js\""
   },
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
