@@ -15,7 +15,7 @@ export const useWebSocket = () => {
   const connect = () => {
     try {
       // Use localhost for development, adjust for production
-      const wsUrl = process.client ? 'ws://pokerino.designpositive.eu:8080' : null
+      const wsUrl = process.client ? 'ws://' + HOSTNAME + ':8080' : null
       if (!wsUrl) return
 
       ws.value = new WebSocket(wsUrl)
