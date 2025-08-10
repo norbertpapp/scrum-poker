@@ -1,4 +1,4 @@
-const { WebSocketServer } = require('ws');
+import WebSocket, { WebSocketServer } from 'ws';
 
 class ScrumPokerServer {
   constructor() {
