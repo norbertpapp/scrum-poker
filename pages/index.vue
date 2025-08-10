@@ -104,6 +104,25 @@
         </div>
       </div>
 
+      <!-- Results -->
+      <div v-if="gameState.votesRevealed" class="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-fade-in">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Results</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="text-center">
+            <div class="text-3xl font-bold text-primary-600">{{ voteStatistics.average }}</div>
+            <div class="text-sm text-gray-500">Average</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold text-green-600">{{ voteStatistics.mode }}</div>
+            <div class="text-sm text-gray-500">Most Common</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold text-orange-600">{{ voteStatistics.range }}</div>
+            <div class="text-sm text-gray-500">Range</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Participants -->
       <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Participants</h3>
@@ -194,6 +213,7 @@
           <div
             v-if="showEmojiPicker"
             class="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50"
+            style="width: max-content;"
           >
             <div class="grid grid-cols-4 gap-2">
               <button
@@ -205,25 +225,6 @@
                 {{ emoji }}
               </button>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Results -->
-      <div v-if="gameState.votesRevealed" class="bg-white rounded-2xl shadow-lg p-6 animate-fade-in">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Results</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="text-center">
-            <div class="text-3xl font-bold text-primary-600">{{ voteStatistics.average }}</div>
-            <div class="text-sm text-gray-500">Average</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-green-600">{{ voteStatistics.mode }}</div>
-            <div class="text-sm text-gray-500">Most Common</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-orange-600">{{ voteStatistics.range }}</div>
-            <div class="text-sm text-gray-500">Range</div>
           </div>
         </div>
       </div>
