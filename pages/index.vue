@@ -369,4 +369,12 @@ const handleSendPing = (emoji) => {
   sendPing(emoji)
   showEmojiPicker.value = false
 }
+
+// Meta
+useHead({
+  title: () => `Scrum Poker | ${gameState.roomJoined ? roomCode.value : 'Create or join a room'}`,
+  meta: [
+    { name: 'description', content: 'Scrum Poker app for fun.' }
+  ],
+})
 </script>
