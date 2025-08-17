@@ -17,11 +17,12 @@ jobs:
       # Pick your own package manager and build script
       - name: Get & set repository name
         run: echo "NUXT_APP_BASE_URL=/${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+      - uses: oNaiPs/secrets-to-env-action@v1
+        with:
+          secrets: ${{ toJSON(secrets) }}
       - name: Install dependencies
       - run: npm install
       - name: Build it
-        env: 
-          HOSTNAME: ${{ secrets.HOSTNAME }}
       - run: npx nuxt build --preset github_pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
