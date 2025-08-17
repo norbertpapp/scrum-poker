@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: get repository name
+        run: echo "REPOSITORY_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
       - name: Detect package manager
         id: detect-package-manager
         run: |
@@ -71,7 +73,7 @@ jobs:
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Static HTML export with Nuxt
-        run: ${{ steps.detect-package-manager.outputs.manager }} run generate
+        run: npx nuxt build --preset github_pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
