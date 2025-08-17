@@ -21,9 +21,9 @@ jobs:
         with:
           secrets: ${{ toJSON(secrets) }}
       - name: Install dependencies
-      - run: npm install
+        run: npm install
       - name: Static build
-      - run: npx nuxt build --preset github_pages
+        run: npx nuxt build --preset github_pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
