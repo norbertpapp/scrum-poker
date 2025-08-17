@@ -15,7 +15,7 @@ export const useWebSocket = () => {
   const connect = () => {
     try {
       // Use localhost for development, adjust for production
-      const wsUrl = process.client ? 'ws://' + HOSTNAME : 'ws://localhost:8080' 
+      const wsUrl = process.client ? 'ws://' + process.env.HOSTNAME : 'ws://localhost:8080' 
       if (!wsUrl) return
 
       ws.value = new WebSocket(wsUrl)
@@ -163,3 +163,4 @@ export const useWebSocket = () => {
   }
 
 }
+
