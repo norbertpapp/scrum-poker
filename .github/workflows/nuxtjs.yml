@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Static build
-        run: env HOSTNAME=${{ secrets.GITHUB_TOKEN }} npm run generate
+        run: env HOSTNAME=${{ secrets.HOSTNAME }} npm run generate
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
