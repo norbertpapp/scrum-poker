@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Get & set repository name
-        run: echo "NUXT_APP_BASE_URL=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+        run: echo "NUXT_APP_BASE_URL=/${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
       - name: Detect package manager
         id: detect-package-manager
         run: |
