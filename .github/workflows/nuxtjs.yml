@@ -19,6 +19,8 @@ jobs:
         run: echo "NUXT_APP_BASE_URL=/${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
       - run: npm install
       - run: npx nuxt build --preset github_pages
+        env: 
+          HOSTNAME: ${{ secrets.HOSTNAME }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
