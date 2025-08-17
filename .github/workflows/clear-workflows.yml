@@ -1,0 +1,10 @@
+# https://github.com/actions/deploy-pages#usage
+name: Clear past workflows in bulk
+on:
+  workflow_dispatch:
+jobs:
+  delete_runs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete workflow runs
+        uses: dmvict/clean-workflow-runs@v1.0.0
