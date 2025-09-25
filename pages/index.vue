@@ -315,7 +315,10 @@ const pokerCards = [
   { value: 21, display: '21', color: 'text-orange-600' },
   { value: 34, display: '34', color: 'text-red-600' },
   { value: 55, display: '55', color: 'text-red-600' },
+  { value: 69, display: '69', color: 'text-purple-600' },
   { value: 89, display: '89', color: 'text-purple-600' },
+  { value: 100, display: '100', color: 'text-purple-600' },
+  { value: 420, display: '420', color: 'text-green-600' },
   { value: '?', display: '?', color: 'text-gray-600' },
   { value: 'coffee', display: '☕', color: 'text-amber-600' }
 ]
