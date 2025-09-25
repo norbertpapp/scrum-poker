@@ -71,11 +71,11 @@
           </div>
           <div class="flex space-x-3">
             <button
-              @click="copyRoomCode"
+              @click="copyRoomUrl"
               class="btn-secondary flex items-center space-x-2"
             >
               <span>📋</span>
-              <span>Copy Code</span>
+              <span>Copy URL</span>
             </button>
             <button
               @click="handleLeaveRoom"
@@ -146,7 +146,7 @@
             <div class="text-xs text-gray-500 mt-1">
               <span v-if="!participant.hasVoted" class="text-gray-400">Waiting...</span>
               <span v-else-if="!gameState.votesRevealed" class="text-primary-600">✓ Voted</span>
-              <span v-else class="font-bold text-lg text-gray-900">{{ participant.vote }}</span>
+              <span v-else class="font-bold text-lg text-gray-900">{{ getVoteDisplay(participant.vote) }}</span>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@
         
         <button
           v-if="gameState.votesRevealed"
-          @click="resetVotes"
+          @click="handleResetVotes"
           class="btn-primary flex-1 py-3 text-lg"
         >
           New Round
@@ -253,16 +253,39 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useWebSocket } from '~/composables/useWebSocket'
+import { useRoute, useRouter } from 'vue-router'
+
+// Local storage key for player name
+const PLAYER_NAME_KEY = 'scrum-poker-player-name'
 
 // WebSocket connection
 const { connected, gameState, pings, joinRoom, leaveRoom, vote, clearVote, revealVotes, resetVotes, updateStory, sendPing } = useWebSocket()
 
+// Router for URL handling
+const route = useRoute()
+const router = useRouter()
+
 // Player data
 const playerName = ref('')
-const roomCode = ref('')
+const roomCode = ref(route.query.room || '')
 const selectedCard = ref(null)
 const currentStory = ref('')
 const playerId = ref(Date.now().toString())
+
+// Load saved player name from localStorage on component mount
+onMounted(() => {
+  const savedName = localStorage.getItem(PLAYER_NAME_KEY)
+  if (savedName) {
+    playerName.value = savedName
+  }
+})
+
+// Watch for player name changes and save to localStorage
+watch(playerName, (newName) => {
+  if (newName.trim()) {
+    localStorage.setItem(PLAYER_NAME_KEY, newName.trim())
+  }
+})
 
 // Emoji ping data
 const showEmojiPicker = ref(false)
@@ -271,6 +294,13 @@ const emojiOptions = ['👍', '👎', '🤔', '😄', '😮', '🎉', '⚡', '�
 // Sync current story with game state
 watch(() => gameState.currentStory, (newStory) => {
   currentStory.value = newStory
+})
+
+// Watch for room code changes to update URL
+watch(() => gameState.roomCode, (newRoomCode) => {
+  if (newRoomCode && route.query.room !== newRoomCode) {
+    router.replace({ query: { room: newRoomCode } })
+  }
 })
 
 // Poker cards configuration
@@ -320,6 +350,20 @@ const voteStatistics = computed(() => {
   return { average, mode, range }
 })
 
+// Helper function to get display value for votes
+const getVoteDisplay = (vote) => {
+  if (vote === 'coffee') return '☕'
+  return vote
+}
+
+// Helper function to get room URL
+const getRoomUrl = () => {
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}${window.location.pathname}?room=${gameState.roomCode}`
+  }
+  return ''
+}
+
 // Methods
 const generateRoomCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase()
@@ -335,9 +379,11 @@ const handleJoinRoom = () => {
 const handleLeaveRoom = () => {
   leaveRoom()
   selectedCard.value = null
-  playerName.value = ''
   roomCode.value = ''
   currentStory.value = ''
+  // Clear room from URL
+  router.replace({ query: {} })
+  // Note: We don't clear playerName.value here to keep it saved for next time
 }
 
 const selectCard = (card) => {
@@ -352,16 +398,22 @@ const clearSelection = () => {
   clearVote()
 }
 
+const handleResetVotes = () => {
+  resetVotes()
+  selectedCard.value = null // Clear selected card when starting new round
+}
+
 const handleStoryUpdate = () => {
   updateStory(currentStory.value)
 }
 
-const copyRoomCode = async () => {
+const copyRoomUrl = async () => {
   try {
-    await navigator.clipboard.writeText(gameState.roomCode)
+    const roomUrl = getRoomUrl()
+    await navigator.clipboard.writeText(roomUrl)
     // You could add a toast notification here
   } catch (err) {
-    console.error('Failed to copy room code:', err)
+    console.error('Failed to copy room URL:', err)
   }
 }
 
