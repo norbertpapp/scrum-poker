@@ -255,6 +255,9 @@ import { ref, computed, watch } from 'vue'
 import { useWebSocket } from '~/composables/useWebSocket'
 import { useRoute, useRouter } from 'vue-router'
 
+// Local storage key for player name
+const PLAYER_NAME_KEY = 'scrum-poker-player-name'
+
 // WebSocket connection
 const { connected, gameState, pings, joinRoom, leaveRoom, vote, clearVote, revealVotes, resetVotes, updateStory, sendPing } = useWebSocket()
 
@@ -268,6 +271,21 @@ const roomCode = ref(route.query.room || '')
 const selectedCard = ref(null)
 const currentStory = ref('')
 const playerId = ref(Date.now().toString())
+
+// Load saved player name from localStorage on component mount
+if (process.client) {
+  const savedName = localStorage.getItem(PLAYER_NAME_KEY)
+  if (savedName) {
+    playerName.value = savedName
+  }
+}
+
+// Watch for player name changes and save to localStorage
+watch(playerName, (newName) => {
+  if (process.client && newName.trim()) {
+    localStorage.setItem(PLAYER_NAME_KEY, newName.trim())
+  }
+})
 
 // Emoji ping data
 const showEmojiPicker = ref(false)
@@ -361,11 +379,11 @@ const handleJoinRoom = () => {
 const handleLeaveRoom = () => {
   leaveRoom()
   selectedCard.value = null
-  playerName.value = ''
   roomCode.value = ''
   currentStory.value = ''
   // Clear room from URL
   router.replace({ query: {} })
+  // Note: We don't clear playerName.value here to keep it saved for next time
 }
 
 const selectCard = (card) => {
