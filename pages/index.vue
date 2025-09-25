@@ -273,16 +273,16 @@ const currentStory = ref('')
 const playerId = ref(Date.now().toString())
 
 // Load saved player name from localStorage on component mount
-if (process.client) {
+onMounted(() => {
   const savedName = localStorage.getItem(PLAYER_NAME_KEY)
   if (savedName) {
     playerName.value = savedName
   }
-}
+})
 
 // Watch for player name changes and save to localStorage
 watch(playerName, (newName) => {
-  if (process.client && newName.trim()) {
+  if (newName.trim()) {
     localStorage.setItem(PLAYER_NAME_KEY, newName.trim())
   }
 })
@@ -358,7 +358,7 @@ const getVoteDisplay = (vote) => {
 
 // Helper function to get room URL
 const getRoomUrl = () => {
-  if (process.client) {
+  if (typeof window !== 'undefined') {
     return `${window.location.origin}${window.location.pathname}?room=${gameState.roomCode}`
   }
   return ''
