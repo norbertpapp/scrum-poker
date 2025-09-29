@@ -1,0 +1,16 @@
+# Cloudflare Workers configuration for Scrum Poker
+name = "scrum-poker-websocket"
+main = "functions/websocket.js"
+compatibility_date = "2024-01-01"
+
+# Durable Objects configuration
+[[durable_objects.bindings]]
+name = "SCRUM_POKER_ROOM"
+class_name = "ScrumPokerRoom"
+
+# WebSocket support
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[env.development]
+vars = { ENVIRONMENT = "development" }

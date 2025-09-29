@@ -14,9 +14,18 @@ export const useWebSocket = () => {
 
   const connect = () => {
     try {
-      // Use localhost for development, adjust for production
-      const wsUrl = typeof window !== 'undefined' ? 'ws://' + HOSTNAME : 'ws://localhost:8080' 
-      if (!wsUrl) return
+      // Use Cloudflare Workers WebSocket endpoint
+      let wsUrl
+      if (typeof window !== 'undefined') {
+        // In production, use your Cloudflare Workers domain
+        // In development, you can use wrangler dev or ngrok tunnel
+        const isDev = window.location.hostname === 'localhost'
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+        const host = isDev ? 'localhost:8787' : 'your-worker.your-subdomain.workers.dev'
+        wsUrl = `${protocol}//${host}/websocket`
+      } else {
+        return
+      }
 
       ws.value = new WebSocket(wsUrl)
       
@@ -38,12 +47,12 @@ export const useWebSocket = () => {
         connected.value = false
         console.log('Disconnected from WebSocket server')
         
-        // Attempt to reconnect after 3 seconds
+        // Attempt to reconnect after 5 seconds
         setTimeout(() => {
           if (!connected.value) {
             connect()
           }
-        }, 3000)
+        }, 5000)
       }
       
       ws.value.onerror = (error) => {
@@ -138,6 +147,7 @@ export const useWebSocket = () => {
   const sendPing = (emoji) => {
     sendMessage('SEND_PING', { emoji })
   }
+
   onMounted(() => {
     if (typeof window !== 'undefined') {
       connect()
@@ -161,7 +171,4 @@ export const useWebSocket = () => {
     updateStory,
     sendPing
   }
-
 }
-
-
