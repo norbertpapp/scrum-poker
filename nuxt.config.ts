@@ -17,8 +17,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   vite: {
     define: {
-      HOSTNAME: 'web-bjbh32j7s46c.up-de-fra1-k8s-1.apps.run-on-seenode.com'
+      HOSTNAME: JSON.stringify('web-bjbh32j7s46c.up-de-fra1-k8s-1.apps.run-on-seenode.com')
     }
   }
 
 })
+
