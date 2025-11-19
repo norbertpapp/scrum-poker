@@ -15,7 +15,7 @@ export const useWebSocket = () => {
   const connect = () => {
     try {
       // Use localhost for development, adjust for production
-      const wsUrl = typeof window !== 'undefined' ? 'ws://' + HOSTNAME : 'ws://localhost:8080' 
+      const wsUrl = typeof window !== 'undefined' ? 'wss://' + HOSTNAME : 'ws://localhost:8080' 
       if (!wsUrl) return
 
       ws.value = new WebSocket(wsUrl)
