@@ -23,7 +23,9 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Static build
-        run: env HOSTNAME=pokerino.designpositive.eu:8080 npm run generate
+        env:
+          HOSTNAME: ${{ secrets.HOSTNAME }}
+        run: env HOSTNAME=$HOSTNAME npm run generate
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
