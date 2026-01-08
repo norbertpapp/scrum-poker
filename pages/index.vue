@@ -65,9 +65,29 @@
       <!-- Room Info -->
       <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-          <div>
+          <div class="flex-1">
             <h2 class="text-2xl font-bold text-gray-900">Room: {{ gameState.roomCode }}</h2>
             <p class="text-gray-600">{{ gameState.participants.length }} participants</p>
+            <div class="flex items-center mt-2 space-x-2">
+              <span class="text-sm text-gray-500">Your name:</span>
+              <input
+                v-if="editingName"
+                v-model="newPlayerName"
+                type="text"
+                class="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                @keyup.enter="handleNameChange"
+                @blur="handleNameChange"
+                ref="nameInput"
+              />
+              <span v-else class="text-sm font-medium text-gray-900">{{ playerName }}</span>
+              <button
+                v-if="!editingName"
+                @click="startEditingName"
+                class="text-sm text-primary-600 hover:text-primary-700"
+              >
+                Edit
+              </button>
+            </div>
           </div>
           <div class="flex space-x-3">
             <button
@@ -154,16 +174,18 @@
 
       <!-- Voting Cards -->
       <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-6">Choose Your Estimate</h3>
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">
+          Choose Your Estimate
+          <span v-if="gameState.votesRevealed" class="text-sm text-gray-500 font-normal ml-2">(You can still change your vote)</span>
+        </h3>
         <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4">
           <div
             v-for="card in pokerCards"
             :key="card.value"
             @click="selectCard(card)"
             class="poker-card aspect-[3/4] flex items-center justify-center"
-            :class="{ 
-              'selected': selectedCard?.value === card.value,
-              'opacity-50': gameState.votesRevealed 
+            :class="{
+              'selected': selectedCard?.value === card.value
             }"
           >
             <span class="text-2xl font-bold" :class="card.color">
@@ -251,7 +273,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useWebSocket } from '~/composables/useWebSocket'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -259,7 +281,7 @@ import { useRoute, useRouter } from 'vue-router'
 const PLAYER_NAME_KEY = 'scrum-poker-player-name'
 
 // WebSocket connection
-const { connected, gameState, pings, joinRoom, leaveRoom, vote, clearVote, revealVotes, resetVotes, updateStory, sendPing } = useWebSocket()
+const { connected, gameState, pings, joinRoom, leaveRoom, vote, clearVote, revealVotes, resetVotes, updateStory, sendPing, changeName } = useWebSocket()
 
 // Router for URL handling
 const route = useRoute()
@@ -271,6 +293,9 @@ const roomCode = ref(route.query.room || '')
 const selectedCard = ref(null)
 const currentStory = ref('')
 const playerId = ref(Date.now().toString())
+const editingName = ref(false)
+const newPlayerName = ref('')
+const nameInput = ref(null)
 
 // Load saved player name from localStorage on component mount
 onMounted(() => {
@@ -390,8 +415,6 @@ const handleLeaveRoom = () => {
 }
 
 const selectCard = (card) => {
-  if (gameState.votesRevealed) return
-  
   selectedCard.value = card
   vote(card.value)
 }
@@ -423,6 +446,22 @@ const copyRoomUrl = async () => {
 const handleSendPing = (emoji) => {
   sendPing(emoji)
   showEmojiPicker.value = false
+}
+
+const startEditingName = () => {
+  newPlayerName.value = playerName.value
+  editingName.value = true
+  nextTick(() => {
+    nameInput.value?.focus()
+  })
+}
+
+const handleNameChange = () => {
+  if (newPlayerName.value.trim() && newPlayerName.value.trim() !== playerName.value) {
+    playerName.value = newPlayerName.value.trim()
+    changeName(newPlayerName.value.trim())
+  }
+  editingName.value = false
 }
 
 // Meta

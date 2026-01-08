@@ -138,6 +138,11 @@ export const useWebSocket = () => {
   const sendPing = (emoji) => {
     sendMessage('SEND_PING', { emoji })
   }
+
+  const changeName = (newName) => {
+    sendMessage('CHANGE_NAME', { newName })
+  }
+
   onMounted(() => {
     if (typeof window !== 'undefined') {
       connect()
@@ -159,7 +164,8 @@ export const useWebSocket = () => {
     revealVotes,
     resetVotes,
     updateStory,
-    sendPing
+    sendPing,
+    changeName
   }
 
 }

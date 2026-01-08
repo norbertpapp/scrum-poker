@@ -55,6 +55,9 @@ class ScrumPokerServer {
       case 'SEND_PING':
         this.handleSendPing(ws, message);
         break;
+      case 'CHANGE_NAME':
+        this.handleChangeName(ws, message);
+        break;
     }
   }
   
@@ -208,16 +211,36 @@ class ScrumPokerServer {
   handleUpdateStory(ws, message) {
     const clientInfo = this.clients.get(ws);
     if (!clientInfo) return;
-    
+
     const { roomCode } = clientInfo;
     const room = this.rooms.get(roomCode);
-    
+
     if (room) {
       room.currentStory = message.data.story;
       this.broadcastRoomState(roomCode);
     }
   }
-  
+
+  handleChangeName(ws, message) {
+    const clientInfo = this.clients.get(ws);
+    if (!clientInfo) return;
+
+    const { roomCode, playerId } = clientInfo;
+    const room = this.rooms.get(roomCode);
+    const newName = message.data.newName;
+
+    if (room && room.participants.has(playerId) && newName && newName.trim()) {
+      const participant = room.participants.get(playerId);
+      participant.name = newName.trim();
+
+      clientInfo.playerName = newName.trim();
+      this.clients.set(ws, clientInfo);
+
+      this.broadcastRoomState(roomCode);
+      console.log(`Player ${playerId} changed name to ${newName.trim()} in room ${roomCode}`);
+    }
+  }
+
   handleDisconnect(ws) {
     const clientInfo = this.clients.get(ws);
     if (clientInfo) {
