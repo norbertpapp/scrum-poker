@@ -366,6 +366,7 @@ const voteStatistics = computed(() => {
     .filter(vote => typeof vote === 'number' && !isNaN(vote))
   
   if (numericVotes.length === 0) return { average: 'N/A', mode: 'N/A', range: 'N/A' }
+  if (numericVotes.length === 1) return { average: numericVotes[0], mode: numericVotes[0], range: 'N/A' }
   
   const average = (numericVotes.reduce((a, b) => a + b, 0) / numericVotes.length).toFixed(1)
   const mode = numericVotes.sort((a, b) => 
