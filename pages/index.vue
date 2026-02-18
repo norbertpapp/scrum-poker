@@ -150,7 +150,7 @@
           <div
             v-for="participant in gameState.participants"
             :key="participant.id"
-            class="text-center"
+            class="text-center relative"
           >
             <div
               class="w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold text-lg"
@@ -162,7 +162,8 @@
             >
               {{ participant.name.charAt(0).toUpperCase() }}
             </div>
-            <p class="text-sm font-medium text-gray-900 truncate">{{ participant.name }}</p>
+            <p class="text-sm font-medium text-gray-900 truncate hover-me">{{ participant.name }}</p>
+            <span class="tooltip full-name">{{ participant.name }}</span>
             <div class="text-xs text-gray-500 mt-1">
               <span v-if="!participant.hasVoted" class="text-gray-400">Waiting...</span>
               <span v-else-if="!gameState.votesRevealed" class="text-primary-600">✓ Voted</span>
@@ -330,6 +331,7 @@ watch(() => gameState.roomCode, (newRoomCode) => {
 
 // Poker cards configuration
 const pokerCards = [
+  { value: 'coffee', display: '☕', color: 'text-amber-600' },
   { value: 0, display: '0', color: 'text-gray-600' },
   { value: 1, display: '1', color: 'text-blue-600' },
   { value: 2, display: '2', color: 'text-blue-600' },
@@ -344,8 +346,7 @@ const pokerCards = [
   { value: 89, display: '89', color: 'text-purple-600' },
   { value: 100, display: '100', color: 'text-purple-600' },
   { value: 420, display: '420', color: 'text-green-600' },
-  { value: '?', display: '?', color: 'text-gray-600' },
-  { value: 'coffee', display: '☕', color: 'text-amber-600' }
+  { value: '?', display: '?', color: 'text-gray-600' }
 ]
 
 // Computed properties

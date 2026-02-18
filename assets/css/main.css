@@ -4,6 +4,11 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+:root {
+--y-overflow: 1rem;
+--x-overflow: 1rem;
+}
+
 @layer base {
   body {
     font-family: 'Inter', system-ui, sans-serif;
@@ -57,4 +62,79 @@
     opacity: 0;
     transform: translateY(-30px) scale(0.9);
   }
+}
+
+.hover-me:hover + .tooltip {
+  opacity: 1;
+}
+
+.tooltip {
+  position: absolute;
+
+  /*   The distance between the tooltip and the element to hover over */
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  transform-origin: top center;
+
+  /*   Set a minimum height for your tooltip, which affects text wrapping */
+  min-width: fit-content;
+
+  /*   Adding some nice padding */
+  padding: .5rem 1rem;
+  border-radius: 0.4rem;
+
+  background: black;
+  color: white;
+  opacity: 0;
+
+  /*   Adding some nice padding */
+  transition: opacity 0.2s ease;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+
+  height: 0;
+  width: 0;
+
+  /*  'top: 99%' Moves the tooltip triangle vertically to the bottom of the tooltip, but ensures they overlap to prevent whitespace in between. 
+    Whitespace is visible if you use 'top: 100%', for example.  */
+  top: 99%;
+
+  /*  'left: 50%' Moves the tooltip triangle to the horizontal center of the tooltip, but requires translateX: -50% to move the tooltip  triangle back by 50% of its own width. */
+  left: 50%;
+
+  border-style: solid;
+  border-width: 10px .4rem 0
+    .4rem;
+  border-color: black transparent transparent transparent;
+
+  --translateX: -50%;
+  /* 'transform: translateX' Works with left: 50% to move the tooltip triangle to the horizontal center of the tooltip box */
+  transform: translateX(var(--translateX));
+  /*   Additional browser compatibility for 'transform': */
+  -moz-transform: translateX(var(--translateX));
+  -webkit-transform: translateX(var(--translateX));
+}
+
+.tooltip::before {
+  /* hitbox for hover */
+  content: "";
+  position: absolute;
+  top: calc(var(--y-overflow) / -2);
+  left: calc(var(--x-overflow) / -2);
+
+  height: calc(100% + var(--y-overflow));
+  width: calc(100% + var(--x-overflow));
+  background: rgba(0, 0, 0, 0);
+}
+
+.tooltip .tooltip::before:hover + {
+  opacity: 1;
+}
+
+.tooltip:hover {
+  opacity: 1;
 }
