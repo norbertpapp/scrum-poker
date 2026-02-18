@@ -15,12 +15,12 @@ I was fed up with some ad-bloated and freemium limited Scrum Poker apps, so I us
 
 ## (Un)planned improvements / Nice to haves
 - [ ] Create some logo
-- [x] Add ability to change casted vote after the votes are revealed
-- [ ] Show loooong names in a tooltip
 - [ ] Get rid of Tailwind CSS (for some reason AI loves it)
-- [x] Allow editing of display name while being in a room (for giggles obviously)
 - [ ] Add custom emoji reactions / improve existing reaction style & positioning
 - [ ] Add "nudge" option to bother procrastinating estimators
+- [x] Add ability to change casted vote after the votes are revealed
+- [x] Show loooong names in a tooltip
+- [x] Allow editing of display name while being in a room (for giggles obviously)
 
 
 
