@@ -107,23 +107,6 @@
         </div>
       </div>
 
-      <!-- Story Input -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-        <div class="space-y-4">
-          <label for="storyTitle" class="block text-lg font-medium text-gray-900">
-            Current Story
-          </label>
-          <input
-            id="storyTitle"
-            v-model="currentStory"
-            type="text"
-            placeholder="Enter the story or task to estimate..."
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-lg"
-            @input="handleStoryUpdate"
-          />
-        </div>
-      </div>
-
       <!-- Results -->
       <div v-if="gameState.votesRevealed" class="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-fade-in">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Results</h3>
@@ -282,7 +265,7 @@ import { useRoute, useRouter } from 'vue-router'
 const PLAYER_NAME_KEY = 'scrum-poker-player-name'
 
 // WebSocket connection
-const { connected, gameState, pings, joinRoom, leaveRoom, vote, clearVote, revealVotes, resetVotes, updateStory, sendPing, changeName } = useWebSocket()
+const { connected, gameState, pings, joinRoom, leaveRoom, vote, clearVote, revealVotes, resetVotes, sendPing, changeName } = useWebSocket()
 
 // Router for URL handling
 const route = useRoute()
@@ -292,7 +275,6 @@ const router = useRouter()
 const playerName = ref('')
 const roomCode = ref(route.query.room || '')
 const selectedCard = ref(null)
-const currentStory = ref('')
 const playerId = ref(Date.now().toString())
 const editingName = ref(false)
 const newPlayerName = ref('')
@@ -316,11 +298,6 @@ watch(playerName, (newName) => {
 // Emoji ping data
 const showEmojiPicker = ref(false)
 const emojiOptions = ['👍', '👎', '🤔', '😄', '😮', '🎉', '⚡', '🔥', '💡', '❤️', '👏', '🚀']
-
-// Sync current story with game state
-watch(() => gameState.currentStory, (newStory) => {
-  currentStory.value = newStory
-})
 
 // Watch for room code changes to update URL
 watch(() => gameState.roomCode, (newRoomCode) => {
@@ -410,7 +387,6 @@ const handleLeaveRoom = () => {
   leaveRoom()
   selectedCard.value = null
   roomCode.value = ''
-  currentStory.value = ''
   // Clear room from URL
   router.replace({ query: {} })
   // Note: We don't clear playerName.value here to keep it saved for next time
@@ -429,10 +405,6 @@ const clearSelection = () => {
 const handleResetVotes = () => {
   resetVotes()
   selectedCard.value = null // Clear selected card when starting new round
-}
-
-const handleStoryUpdate = () => {
-  updateStory(currentStory.value)
 }
 
 const copyRoomUrl = async () => {

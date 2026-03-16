@@ -46,9 +46,6 @@ class ScrumPokerServer {
       case 'RESET_VOTES':
         this.handleResetVotes(ws, message);
         break;
-      case 'UPDATE_STORY':
-        this.handleUpdateStory(ws, message);
-        break;
       case 'CLEAR_VOTE':
         this.handleClearVote(ws, message);
         break;
@@ -69,7 +66,6 @@ class ScrumPokerServer {
       this.rooms.set(roomCode, {
         code: roomCode,
         participants: new Map(),
-        currentStory: '',
         votesRevealed: false
       });
     }
@@ -196,27 +192,13 @@ class ScrumPokerServer {
     
     if (room) {
       room.votesRevealed = false;
-      room.currentStory = '';
-      
+
       // Reset all participant votes
       room.participants.forEach(participant => {
         participant.hasVoted = false;
         participant.vote = null;
       });
-      
-      this.broadcastRoomState(roomCode);
-    }
-  }
-  
-  handleUpdateStory(ws, message) {
-    const clientInfo = this.clients.get(ws);
-    if (!clientInfo) return;
 
-    const { roomCode } = clientInfo;
-    const room = this.rooms.get(roomCode);
-
-    if (room) {
-      room.currentStory = message.data.story;
       this.broadcastRoomState(roomCode);
     }
   }
@@ -264,7 +246,6 @@ class ScrumPokerServer {
       data: {
         roomCode: room.code,
         participants,
-        currentStory: room.currentStory,
         votesRevealed: room.votesRevealed
       }
     };
