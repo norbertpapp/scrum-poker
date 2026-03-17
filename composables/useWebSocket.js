@@ -7,7 +7,6 @@ export const useWebSocket = () => {
   const gameState = reactive({
     roomJoined: false,
     roomCode: '',
-    currentStory: '',
     participants: [],
     votesRevealed: false
   })
@@ -82,7 +81,6 @@ export const useWebSocket = () => {
   const updateGameState = (data) => {
     gameState.roomCode = data.roomCode
     gameState.participants = data.participants
-    gameState.currentStory = data.currentStory
     gameState.votesRevealed = data.votesRevealed
     gameState.roomJoined = true
   }
@@ -112,7 +110,6 @@ export const useWebSocket = () => {
     gameState.participants = []
     gameState.votesRevealed = false
     gameState.roomCode = ''
-    gameState.currentStory = ''
   }
 
   const vote = (voteValue) => {
@@ -129,10 +126,6 @@ export const useWebSocket = () => {
 
   const resetVotes = () => {
     sendMessage('RESET_VOTES', {})
-  }
-
-  const updateStory = (story) => {
-    sendMessage('UPDATE_STORY', { story })
   }
 
   const sendPing = (emoji) => {
@@ -163,7 +156,6 @@ export const useWebSocket = () => {
     clearVote,
     revealVotes,
     resetVotes,
-    updateStory,
     sendPing,
     changeName
   }
