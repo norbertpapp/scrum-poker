@@ -11,7 +11,6 @@ I was fed up with some ad-bloated and freemium limited Scrum Poker apps, so I us
 - 🔗 Join rooms via shared link - you don't have to mess with room codes (mostly)
 - 🪙 Effortless hosting - the current version uses Github Pages & a managed NodeJS instance for websockets service (approx. $3 per month, well worth it at the moment)
 - 🎉 Emoji reactions for no reason
-- Story name field - completely useless (maybe gonna get rid of it)
 
 ## (Un)planned improvements / Nice to haves
 - [ ] Create some logo
