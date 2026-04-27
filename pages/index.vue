@@ -184,7 +184,6 @@
         <button
           v-if="!gameState.votesRevealed"
           @click="revealVotes"
-          :disabled="!allVotesIn"
           class="btn-primary flex-1 py-3 text-lg"
         >
           Reveal Votes ({{ votedCount }}/{{ gameState.participants.length }})
@@ -196,13 +195,6 @@
           class="btn-primary flex-1 py-3 text-lg"
         >
           New Round
-        </button>
-        
-        <button
-          @click="clearSelection"
-          class="btn-secondary flex-1 py-3 text-lg"
-        >
-          Clear Selection
         </button>
         
         <!-- Emoji Ping Button -->
@@ -404,6 +396,7 @@ const clearSelection = () => {
 
 const handleResetVotes = () => {
   resetVotes()
+  clearSelection()
   selectedCard.value = null // Clear selected card when starting new round
 }
 
