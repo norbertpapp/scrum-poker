@@ -46,11 +46,26 @@ export const usePokerSession = () => {
   if (import.meta.client && !sideEffectsInitialized) {
     sideEffectsInitialized = true
 
+    const resolveQueryRoomCode = (queryRoom) => {
+      if (Array.isArray(queryRoom)) {
+        return queryRoom[0] || ''
+      }
+      return queryRoom || ''
+    }
+
     watch(playerName, (name) => {
       if (name.trim()) {
         localStorage.setItem(PLAYER_NAME_KEY, name.trim())
       }
     })
+
+    watch(() => route.query.room, (queryRoom) => {
+      const nextRoomCode = resolveQueryRoomCode(queryRoom)
+
+      if (!gameState.roomJoined && nextRoomCode && roomCode.value !== nextRoomCode) {
+        roomCode.value = nextRoomCode
+      }
+    }, { immediate: true })
 
     watch(() => gameState.roomCode, (newRoomCode) => {
       if (!newRoomCode) {
