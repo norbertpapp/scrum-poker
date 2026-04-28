@@ -18,8 +18,6 @@ I was fed up with some ad-bloated and freemium limited Scrum Poker apps, so I us
 - [ ] Add custom emoji reactions / improve existing reaction style & positioning
 - [ ] Add "nudge" option to bother procrastinating estimators
 - [ ] Add changelog and changelog subpage (or a popup?) - _maybe via markdown and by using @nuxt/content_
-- [ ] Decouple logic from `pages/index.vue`
-- [ ] Move room details & controls to the header (to free up vertical space)
 - [ ] Use translations?
 - [ ] Add confetti effect when there's full alignment in estimations (matching votes by everyone)
 
