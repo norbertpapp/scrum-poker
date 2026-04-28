@@ -17,9 +17,11 @@ I was fed up with some ad-bloated and freemium limited Scrum Poker apps, so I us
 - [ ] Get rid of Tailwind CSS (for some reason AI loves it)
 - [ ] Add custom emoji reactions / improve existing reaction style & positioning
 - [ ] Add "nudge" option to bother procrastinating estimators
-- [x] Add ability to change casted vote after the votes are revealed
-- [x] Show loooong names in a tooltip
-- [x] Allow editing of display name while being in a room (for giggles obviously)
+- [ ] Add changelog and changelog subpage (or a popup?) - _maybe via markdown and by using @nuxt/content_
+- [ ] Decouple logic from `pages/index.vue`
+- [ ] Move room details & controls to the header (to free up vertical space)
+- [ ] Use translations?
+- [ ] Add confetti effect when there's full alignment in estimations (matching votes by everyone)
 
 
 
