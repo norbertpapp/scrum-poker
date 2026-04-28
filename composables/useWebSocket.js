@@ -1,18 +1,26 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 
+const ws = ref(null)
+const connected = ref(false)
+const pings = ref([])
+const gameState = reactive({
+  roomJoined: false,
+  roomCode: '',
+  participants: [],
+  votesRevealed: false
+})
+let reconnectTimeout = null
+let activeConsumers = 0
+
 export const useWebSocket = () => {
   const runtimeConfig = useRuntimeConfig()
-  const ws = ref(null)
-  const connected = ref(false)
-  const pings = ref([])
-  const gameState = reactive({
-    roomJoined: false,
-    roomCode: '',
-    participants: [],
-    votesRevealed: false
-  })
 
   const connect = () => {
+    if (!import.meta.client) return
+    if (ws.value && (ws.value.readyState === WebSocket.OPEN || ws.value.readyState === WebSocket.CONNECTING)) {
+      return
+    }
+
     try {
       const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
       const wsHost = `${window.location.hostname}:8080`
@@ -40,8 +48,8 @@ export const useWebSocket = () => {
         console.log('Disconnected from WebSocket server')
         
         // Attempt to reconnect after 3 seconds
-        setTimeout(() => {
-          if (!connected.value) {
+        reconnectTimeout = setTimeout(() => {
+          if (!connected.value && activeConsumers > 0) {
             connect()
           }
         }, 3000)
@@ -56,6 +64,11 @@ export const useWebSocket = () => {
   }
 
   const disconnect = () => {
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout)
+      reconnectTimeout = null
+    }
+
     if (ws.value) {
       ws.value.close()
       ws.value = null
@@ -140,12 +153,16 @@ export const useWebSocket = () => {
 
   onMounted(() => {
     if (typeof window !== 'undefined') {
+      activeConsumers += 1
       connect()
     }
   })
 
   onUnmounted(() => {
-    disconnect()
+    activeConsumers = Math.max(0, activeConsumers - 1)
+    if (activeConsumers === 0) {
+      disconnect()
+    }
   })
 
   return {

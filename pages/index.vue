@@ -62,58 +62,6 @@
 
     <!-- Game Interface -->
     <div v-else class="animate-slide-up">
-      <!-- Room Info -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-          <div class="flex-1">
-            <h2 class="text-2xl font-bold text-gray-900">Room: {{ gameState.roomCode }}</h2>
-            <p class="text-gray-600">{{ gameState.participants.length }} participants</p>
-            <div class="flex items-center mt-2 space-x-2">
-              <span class="text-sm text-gray-500">Your name:</span>
-              <input
-                v-if="editingName"
-                v-model="newPlayerName"
-                type="text"
-                class="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                @keyup.enter="handleNameChange"
-                @blur="handleNameChange"
-                ref="nameInput"
-              />
-              <button
-                v-if="editingName"
-                @click="handleNameChange"
-                class="text-sm text-primary-600 hover:text-primary-700"
-              >
-                Save
-              </button>
-              <span v-else class="text-sm font-medium text-gray-900">{{ playerName }}</span>
-              <button
-                v-if="!editingName"
-                @click="startEditingName"
-                class="text-sm text-primary-600 hover:text-primary-700"
-              >
-                Edit
-              </button>
-            </div>
-          </div>
-          <div class="flex space-x-3">
-            <button
-              @click="copyRoomUrl"
-              class="btn-secondary flex items-center space-x-2"
-            >
-              <span>📋</span>
-              <span>Copy URL</span>
-            </button>
-            <button
-              @click="handleLeaveRoom"
-              class="btn-secondary text-red-600 hover:bg-red-50"
-            >
-              Leave Room
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- Results -->
       <div v-if="gameState.votesRevealed" class="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-fade-in">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Results</h3>
@@ -257,61 +205,28 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
-import { useWebSocket } from '~/composables/useWebSocket'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { usePokerSession } from '~/composables/usePokerSession'
 
-// Local storage key for player name
-const PLAYER_NAME_KEY = 'scrum-poker-player-name'
+const {
+  connected,
+  gameState,
+  pings,
+  vote,
+  clearVote,
+  revealVotes,
+  resetVotes,
+  sendPing,
+  playerName,
+  roomCode,
+  handleJoinRoom
+} = usePokerSession()
 
-// WebSocket connection
-const { connected, gameState, pings, joinRoom, leaveRoom, vote, clearVote, revealVotes, resetVotes, sendPing, changeName } = useWebSocket()
-
-// Router for URL handling
-const route = useRoute()
-const router = useRouter()
-
-// Player data
-const playerName = ref('')
-const roomCode = ref(route.query.room || '')
 const selectedCard = ref(null)
-const playerId = ref(Date.now().toString())
-const editingName = ref(false)
-const newPlayerName = ref('')
-const nameInput = ref(null)
-
-// Load saved player name from localStorage on component mount
-onMounted(() => {
-  const savedName = localStorage.getItem(PLAYER_NAME_KEY)
-  if (savedName) {
-    playerName.value = savedName
-  }
-})
-
-// Watch for player name changes and save to localStorage
-watch(playerName, (newName) => {
-  if (newName.trim()) {
-    localStorage.setItem(PLAYER_NAME_KEY, newName.trim())
-  }
-})
 
 // Emoji ping data
 const showEmojiPicker = ref(false)
 const emojiOptions = ['👍', '👎', '🤔', '😄', '😮', '🎉', '⚡', '🔥', '💡', '❤️', '👏', '🚀']
-
-// Watch for room code changes to update URL
-watch(() => gameState.roomCode, (newRoomCode) => {
-  if (newRoomCode && route.query.room !== newRoomCode) {
-    router.replace({ query: { room: newRoomCode } })
-  }
-})
-
-// Watch for vote reset, then reset selectedCard
-watch(() => selectedCard.value, (newCardValue) => {
-  if (newCardValue === null) {
-    selectedCard.value = null
-  }
-})
 
 // Poker cards configuration
 const pokerCards = [
@@ -334,11 +249,6 @@ const pokerCards = [
 ]
 
 // Computed properties
-const allVotesIn = computed(() => {
-  return gameState.participants.length > 0 && 
-         gameState.participants.every(p => p.hasVoted)
-})
-
 const votedCount = computed(() => {
   return gameState.participants.filter(p => p.hasVoted).length
 })
@@ -370,35 +280,7 @@ const getVoteDisplay = (vote) => {
   return vote
 }
 
-// Helper function to get room URL
-const getRoomUrl = () => {
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}${window.location.pathname}?room=${gameState.roomCode}`
-  }
-  return ''
-}
-
 // Methods
-const generateRoomCode = () => {
-  return Math.random().toString(36).substring(2, 8).toUpperCase()
-}
-
-const handleJoinRoom = () => {
-  if (!playerName.value.trim() || !connected.value) return
-  
-  const code = roomCode.value.trim() || generateRoomCode()
-  joinRoom(code, playerName.value.trim(), playerId.value)
-}
-
-const handleLeaveRoom = () => {
-  leaveRoom()
-  selectedCard.value = null
-  roomCode.value = ''
-  // Clear room from URL
-  router.replace({ query: {} })
-  // Note: We don't clear playerName.value here to keep it saved for next time
-}
-
 const selectCard = (card) => {
   selectedCard.value = card
   vote(card.value)
@@ -412,38 +294,12 @@ const clearSelection = () => {
 const handleResetVotes = () => {
   resetVotes()
   clearSelection()
-  selectedCard.value = null // Clear selected card when starting new round
-}
-
-const copyRoomUrl = async () => {
-  try {
-    const roomUrl = getRoomUrl()
-    await navigator.clipboard.writeText(roomUrl)
-    // You could add a toast notification here
-  } catch (err) {
-    console.error('Failed to copy room URL:', err)
-  }
+  selectedCard.value = null
 }
 
 const handleSendPing = (emoji) => {
   sendPing(emoji)
   showEmojiPicker.value = false
-}
-
-const startEditingName = () => {
-  newPlayerName.value = playerName.value
-  editingName.value = true
-  nextTick(() => {
-    nameInput.value?.focus()
-  })
-}
-
-const handleNameChange = () => {
-  if (newPlayerName.value.trim() && newPlayerName.value.trim() !== playerName.value) {
-    playerName.value = newPlayerName.value.trim()
-    changeName(newPlayerName.value.trim())
-  }
-  editingName.value = false
 }
 
 // Meta
