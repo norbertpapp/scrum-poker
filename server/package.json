@@ -1,0 +1,11 @@
+{
+  "name": "scrum-poker-websocket-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node websocket.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
