@@ -79,6 +79,13 @@
                 @blur="handleNameChange"
                 ref="nameInput"
               />
+              <button
+                v-if="editingName"
+                @click="handleNameChange"
+                class="text-sm text-primary-600 hover:text-primary-700"
+              >
+                Save
+              </button>
               <span v-else class="text-sm font-medium text-gray-900">{{ playerName }}</span>
               <button
                 v-if="!editingName"
@@ -156,29 +163,6 @@
         </div>
       </div>
 
-      <!-- Voting Cards -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-6">
-          Choose Your Estimate
-          <span v-if="gameState.votesRevealed" class="text-sm text-gray-500 font-normal ml-2">(You can still change your vote)</span>
-        </h3>
-        <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4">
-          <div
-            v-for="card in pokerCards"
-            :key="card.value"
-            @click="selectCard(card)"
-            class="poker-card aspect-[3/4] flex items-center justify-center"
-            :class="{
-              'selected': selectedCard?.value === card.value
-            }"
-          >
-            <span class="text-2xl font-bold" :class="card.color">
-              {{ card.display }}
-            </span>
-          </div>
-        </div>
-      </div>
-
       <!-- Actions -->
       <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mb-8">
         <button
@@ -226,6 +210,30 @@
           </div>
         </div>
       </div>
+
+      <!-- Voting Cards -->
+      <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">
+          Choose Your Estimate
+          <span v-if="gameState.votesRevealed" class="text-sm text-gray-500 font-normal ml-2">(You can still change your vote)</span>
+        </h3>
+        <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4">
+          <div
+            v-for="card in pokerCards"
+            :key="card.value"
+            @click="selectCard(card)"
+            class="poker-card aspect-[3/4] flex items-center justify-center"
+            :class="{
+              'selected': selectedCard?.value === card.value
+            }"
+          >
+            <span class="text-2xl font-bold" :class="card.color">
+              {{ card.display }}
+            </span>
+          </div>
+        </div>
+      </div>
+
     </div>
     
     <!-- Floating Pings -->
