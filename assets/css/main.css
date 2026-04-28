@@ -125,14 +125,9 @@
   position: absolute;
   top: calc(var(--y-overflow) / -2);
   left: calc(var(--x-overflow) / -2);
-
   height: calc(100% + var(--y-overflow));
   width: calc(100% + var(--x-overflow));
   background: rgba(0, 0, 0, 0);
-}
-
-.tooltip .tooltip::before:hover + {
-  opacity: 1;
 }
 
 .tooltip:hover {
