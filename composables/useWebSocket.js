@@ -1,6 +1,7 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 
 export const useWebSocket = () => {
+  const runtimeConfig = useRuntimeConfig()
   const ws = ref(null)
   const connected = ref(false)
   const pings = ref([])
@@ -13,8 +14,9 @@ export const useWebSocket = () => {
 
   const connect = () => {
     try {
-      // Use localhost for development, adjust for production
-      const wsUrl = typeof window !== 'undefined' ? 'wss://' + HOSTNAME : 'ws://localhost:8080' 
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+      const wsHost = `${window.location.hostname}:8080`
+      const wsUrl = runtimeConfig.public.wsUrl || `${wsProtocol}://${wsHost}`
       if (!wsUrl) return
 
       ws.value = new WebSocket(wsUrl)

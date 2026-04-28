@@ -15,9 +15,9 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: ['@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
-  vite: {
-    define: {
-      HOSTNAME: JSON.stringify(process.env.HOSTNAME)
+  runtimeConfig: {
+    public: {
+      wsUrl: process.env.NUXT_PUBLIC_WS_URL || ''
     }
   }
 
