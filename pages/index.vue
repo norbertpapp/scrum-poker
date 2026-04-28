@@ -306,6 +306,13 @@ watch(() => gameState.roomCode, (newRoomCode) => {
   }
 })
 
+// Watch for vote reset, then reset selectedCard
+watch(() => selectedCard.value, (newCardValue) => {
+  if (newCardValue === null) {
+    selectedCard.value = null
+  }
+}
+
 // Poker cards configuration
 const pokerCards = [
   { value: 'coffee', display: '☕', color: 'text-amber-600' },
