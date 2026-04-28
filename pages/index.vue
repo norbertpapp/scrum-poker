@@ -83,8 +83,27 @@
 
       <!-- Participants -->
       <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Participants</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Participants</h3>
+          <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 w-full sm:w-auto">
+            <button
+              @click="participantsView = 'cards'"
+              class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex-1 sm:flex-none"
+              :class="participantsView === 'cards' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
+            >
+              Cards
+            </button>
+            <button
+              @click="participantsView = 'table'"
+              class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex-1 sm:flex-none"
+              :class="participantsView === 'table' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
+            >
+              Table
+            </button>
+          </div>
+        </div>
+
+        <div v-if="participantsView === 'cards'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <div
             v-for="participant in gameState.participants"
             :key="participant.id"
@@ -109,6 +128,32 @@
             </div>
           </div>
         </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Participant</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Vote</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 bg-white">
+              <tr v-for="participant in gameState.participants" :key="participant.id" class="hover:bg-gray-50 transition-colors duration-150">
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ participant.name }}</td>
+                <td class="px-4 py-3 text-sm">
+                  <span v-if="!participant.hasVoted" class="text-gray-400">Waiting...</span>
+                  <span v-else class="text-primary-600">Voted</span>
+                </td>
+                <td class="px-4 py-3 text-sm font-semibold text-gray-900">
+                  <span v-if="!participant.hasVoted" class="text-gray-400 font-normal">—</span>
+                  <span v-else-if="!gameState.votesRevealed" class="text-gray-500 font-normal">Hidden</span>
+                  <span v-else>{{ getVoteDisplay(participant.vote) }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Actions -->
@@ -116,7 +161,8 @@
         <button
           v-if="!gameState.votesRevealed"
           @click="revealVotes"
-          class="btn-primary flex-1 py-3 text-lg"
+          class="flex-1 py-3 text-lg"
+          :class="{'btn-primary': votedCount === gameState.participants.length, 'btn-secondary': votedCount < gameState.participants.length}"
         >
           Reveal Votes ({{ votedCount }}/{{ gameState.participants.length }})
         </button>
@@ -223,6 +269,7 @@ const {
 } = usePokerSession()
 
 const selectedCard = ref(null)
+const participantsView = ref('cards')
 
 // Emoji ping data
 const showEmojiPicker = ref(false)
