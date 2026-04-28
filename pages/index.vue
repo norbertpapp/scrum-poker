@@ -205,7 +205,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { usePokerSession } from '~/composables/usePokerSession'
 
 const {
@@ -274,6 +274,12 @@ const voteStatistics = computed(() => {
   return { average, mode, range }
 })
 
+watch(() => gameState.votesRevealed, (isRevealed, wasRevealed) => {
+  if (!isRevealed && wasRevealed) {
+    selectedCard.value = null
+  }
+})
+
 // Helper function to get display value for votes
 const getVoteDisplay = (vote) => {
   if (vote === 'coffee') return '☕'
@@ -294,7 +300,6 @@ const clearSelection = () => {
 const handleResetVotes = () => {
   resetVotes()
   clearSelection()
-  selectedCard.value = null
 }
 
 const handleSendPing = (emoji) => {
