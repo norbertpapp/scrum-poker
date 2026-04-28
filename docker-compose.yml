@@ -1,6 +1,7 @@
 services:
   scrum-poker-dev:
     image: node:20-alpine
+    container_name: scrum-poker-dev
     working_dir: /app
     command: sh -c "npm ci && npm run dev:full"
     ports:
