@@ -1,28 +1,28 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Connection Status -->
-    <div v-if="!connected" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+    <div v-if="!connected" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 dark:bg-yellow-900/30 dark:border-yellow-700">
       <div class="flex items-center">
         <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-600 mr-2"></div>
-        <p class="text-yellow-800">Connecting to server...</p>
+        <p class="text-yellow-800 dark:text-yellow-200">Connecting to server...</p>
       </div>
     </div>
 
     <!-- Welcome Section -->
     <div v-if="!gameState.roomJoined" class="animate-fade-in">
       <div class="text-center mb-12">
-        <h2 class="text-4xl font-bold text-gray-900 mb-4">
+        <h2 class="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
           Welcome to Scrum Poker
         </h2>
-        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
           Estimate story points collaboratively with your team using planning poker
         </p>
       </div>
       
-      <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+      <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 dark:bg-gray-800">
         <div class="space-y-6">
           <div>
-            <label for="playerName" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="playerName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Your Name
             </label>
             <input
@@ -30,13 +30,13 @@
               v-model="playerName"
               type="text"
               placeholder="Enter your name"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
               @keyup.enter="handleJoinRoom"
             />
           </div>
           
           <div>
-            <label for="roomCode" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="roomCode" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Room Code (Optional)
             </label>
             <input
@@ -44,7 +44,7 @@
               v-model="roomCode"
               type="text"
               placeholder="Enter room code or leave blank to create"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
               @keyup.enter="handleJoinRoom"
             />
           </div>
@@ -63,9 +63,9 @@
     <!-- Game Interface -->
     <div v-else class="animate-slide-up">
       <!-- Results -->
-      <div v-if="gameState.votesRevealed" class="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-fade-in">
+      <div v-if="gameState.votesRevealed" class="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-fade-in dark:bg-gray-800">
         <div class="flex items-center justify-between gap-3 mb-4">
-          <h3 class="text-lg font-semibold text-gray-900">Results</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Results</h3>
           <span
             v-if="votesAreFullyAligned"
             class="inline-flex items-center rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-semibold"
@@ -76,35 +76,35 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="text-center">
             <div class="text-3xl font-bold text-primary-600">{{ voteStatistics.average }}</div>
-            <div class="text-sm text-gray-500">Average</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Average</div>
           </div>
           <div class="text-center">
             <div class="text-3xl font-bold text-green-600">{{ voteStatistics.mode }}</div>
-            <div class="text-sm text-gray-500">Most Common</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Most Common</div>
           </div>
           <div class="text-center">
             <div class="text-3xl font-bold text-orange-600">{{ voteStatistics.range }}</div>
-            <div class="text-sm text-gray-500">Range</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Range</div>
           </div>
         </div>
       </div>
 
       <!-- Participants -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+      <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 dark:bg-gray-800">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h3 class="text-lg font-semibold text-gray-900">Participants</h3>
-          <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 w-full sm:w-auto">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Participants</h3>
+          <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 w-full sm:w-auto dark:border-gray-700 dark:bg-gray-900">
             <button
               @click="participantsView = 'cards'"
               class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex-1 sm:flex-none"
-              :class="participantsView === 'cards' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
+              :class="participantsView === 'cards' ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100' : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'"
             >
               Cards
             </button>
             <button
               @click="participantsView = 'table'"
               class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex-1 sm:flex-none"
-              :class="participantsView === 'table' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
+              :class="participantsView === 'table' ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100' : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'"
             >
               Table
             </button>
@@ -127,35 +127,35 @@
             >
               {{ participant.name.charAt(0).toUpperCase() }}
             </div>
-            <p class="text-sm font-medium text-gray-900 truncate hover-me">{{ participant.name }}</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate hover-me">{{ participant.name }}</p>
             <span class="tooltip full-name">{{ participant.name }}</span>
-            <div class="text-xs text-gray-500 mt-1">
-              <span v-if="!participant.hasVoted" class="text-gray-400">Waiting...</span>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span v-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500">Waiting...</span>
               <span v-else-if="!gameState.votesRevealed" class="text-primary-600">✓ Voted</span>
-              <span v-else class="font-bold text-lg text-gray-900">{{ getVoteDisplay(participant.vote) }}</span>
+              <span v-else class="font-bold text-lg text-gray-900 dark:text-gray-100">{{ getVoteDisplay(participant.vote) }}</span>
             </div>
           </div>
         </div>
 
         <div v-else class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Participant</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Vote</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Participant</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Vote</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 bg-white">
-              <tr v-for="participant in gameState.participants" :key="participant.id" class="hover:bg-gray-50 transition-colors duration-150">
-                <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ participant.name }}</td>
+            <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-700 dark:bg-gray-800">
+              <tr v-for="participant in gameState.participants" :key="participant.id" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">{{ participant.name }}</td>
                 <td class="px-4 py-3 text-sm">
-                  <span v-if="!participant.hasVoted" class="text-gray-400">Waiting...</span>
+                  <span v-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500">Waiting...</span>
                   <span v-else class="text-primary-600">Voted</span>
                 </td>
-                <td class="px-4 py-3 text-sm font-semibold text-gray-900">
-                  <span v-if="!participant.hasVoted" class="text-gray-400 font-normal">—</span>
-                  <span v-else-if="!gameState.votesRevealed" class="text-gray-500 font-normal">Hidden</span>
+                <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <span v-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500 font-normal">—</span>
+                  <span v-else-if="!gameState.votesRevealed" class="text-gray-500 dark:text-gray-400 font-normal">Hidden</span>
                   <span v-else>{{ getVoteDisplay(participant.vote) }}</span>
                 </td>
               </tr>
@@ -196,7 +196,7 @@
           <!-- Emoji Picker -->
           <div
             v-if="showEmojiPicker"
-            class="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50"
+            class="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50 dark:bg-gray-800 dark:border-gray-700"
             style="width: max-content;"
           >
             <div class="grid grid-cols-4 gap-2">
@@ -204,7 +204,7 @@
                 v-for="emoji in emojiOptions"
                 :key="emoji"
                 @click="handleSendPing(emoji)"
-                class="w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center text-xl transition-colors duration-200"
+                class="w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-xl transition-colors duration-200"
               >
                 {{ emoji }}
               </button>
@@ -214,10 +214,10 @@
       </div>
 
       <!-- Voting Cards -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-6">
+      <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 dark:bg-gray-800">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">
           Choose Your Estimate
-          <span v-if="gameState.votesRevealed" class="text-sm text-gray-500 font-normal ml-2">(You can still change your vote)</span>
+          <span v-if="gameState.votesRevealed" class="text-sm text-gray-500 dark:text-gray-400 font-normal ml-2">(You can still change your vote)</span>
         </h3>
         <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4">
           <div
@@ -249,9 +249,9 @@
           top: Math.random() * 60 + 20 + '%'
         }"
       >
-        <div class="bg-white rounded-full shadow-lg px-3 py-2 flex items-center space-x-2">
+        <div class="bg-white rounded-full shadow-lg px-3 py-2 flex items-center space-x-2 dark:bg-gray-800 dark:border dark:border-gray-700">
           <span class="text-2xl">{{ ping.emoji }}</span>
-          <span class="text-sm font-medium text-gray-700">{{ ping.fromPlayer }}</span>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ ping.fromPlayer }}</span>
         </div>
       </div>
     </div>

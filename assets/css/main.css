@@ -11,6 +11,14 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 .card-hover {
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
@@ -70,6 +78,15 @@ body {
 
 .btn-secondary:hover {
   background-color: rgb(229 231 235);
+}
+
+html.dark .btn-secondary {
+  background-color: rgb(31 41 55);
+  color: rgb(229 231 235);
+}
+
+html.dark .btn-secondary:hover {
+  background-color: rgb(55 65 81);
 }
 
 .animate-ping-float {
@@ -163,4 +180,29 @@ body {
 
 .tooltip:hover {
   opacity: 1;
+}
+
+html.dark .poker-card {
+  border-color: rgb(75 85 99);
+  background-color: rgb(17 24 39);
+  box-shadow: 0 8px 16px -6px rgb(0 0 0 / 0.45), 0 3px 8px -3px rgb(0 0 0 / 0.35);
+}
+
+html.dark .poker-card.selected {
+  border-color: #60a5fa;
+  background-color: rgb(30 58 138 / 0.35);
+}
+
+html.dark .poker-card.revealed {
+  border-color: rgb(34 197 94);
+  background-color: rgb(20 83 45 / 0.35);
+}
+
+html.dark .tooltip {
+  background: rgb(17 24 39);
+  color: rgb(243 244 246);
+}
+
+html.dark .tooltip::after {
+  border-color: rgb(17 24 39) transparent transparent transparent;
 }

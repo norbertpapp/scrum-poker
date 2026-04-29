@@ -1,6 +1,6 @@
 <template>
   <div>
-    <header class="bg-white shadow-sm border-b border-gray-100">
+    <header class="bg-white shadow-sm border-b border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-3 py-3 md:flex-row md:items-center md:justify-between">
           <div class="flex items-center gap-3">
@@ -8,25 +8,40 @@
               <span class="text-3xl leading-none" aria-hidden="true">🃏</span>
             </div>
             <div>
-              <h1 class="text-xl leading-tight font-bold text-gray-900">Scrum Poker</h1>
-              <p class="text-sm leading-tight text-gray-500">Planning made simple</p>
+              <h1 class="text-xl leading-tight font-bold text-gray-900 dark:text-gray-100">Scrum Poker</h1>
+              <p class="text-sm leading-tight text-gray-500 dark:text-gray-400">Planning made simple</p>
             </div>
           </div>
 
-          <div v-if="gameState.roomJoined" class="flex flex-wrap items-center justify-end gap-2 md:gap-3">
-            <div class="rounded-lg bg-gray-50 px-3 py-1.5 text-right">
-              <p class="text-sm font-semibold leading-tight text-gray-900">Room: {{ gameState.roomCode }}</p>
-              <p class="text-xs leading-tight text-gray-500">{{ gameState.participants.length }} participants</p>
+          <div class="flex flex-wrap items-center justify-end gap-2 md:gap-3">
+            <button
+              class="btn-secondary h-10"
+              @click="toggleTheme"
+            >
+              {{ isDarkTheme ? '☀️ Light' : '🌙 Dark' }}
+            </button>
+
+            <button
+              class="btn-secondary h-10"
+              @click="setThemeMode('system')"
+            >
+              🖥️ System
+            </button>
+
+            <template v-if="gameState.roomJoined">
+            <div class="rounded-lg bg-gray-50 px-3 py-1.5 text-right dark:bg-gray-800">
+              <p class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-100">Room: {{ gameState.roomCode }}</p>
+              <p class="text-xs leading-tight text-gray-500 dark:text-gray-400">{{ gameState.participants.length }} participants</p>
             </div>
 
-            <div class="flex items-center gap-1 rounded-lg bg-gray-50 px-3 py-1.5">
-              <span class="text-sm text-gray-500">You:</span>
+            <div class="flex items-center gap-1 rounded-lg bg-gray-50 px-3 py-1.5 dark:bg-gray-800">
+              <span class="text-sm text-gray-500 dark:text-gray-400">You:</span>
               <input
                 v-if="editingName"
                 ref="nameInput"
                 v-model="newPlayerName"
                 type="text"
-                class="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                class="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                 @keyup.enter="handleNameChange"
                 @blur="handleNameChange"
               />
@@ -37,7 +52,7 @@
               >
                 Save
               </button>
-              <span v-else class="text-sm font-medium text-gray-900">{{ playerName }}</span>
+              <span v-else class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ playerName }}</span>
               <button
                 v-if="!editingName"
                 class="text-sm font-medium text-primary-600 hover:text-primary-700"
@@ -61,6 +76,7 @@
             >
               ❌ Leave
             </button>
+            </template>
           </div>
         </div>
       </div>
@@ -70,9 +86,9 @@
       <slot />
     </main>
 
-    <footer class="mt-10 border-t border-gray-100 bg-white/70">
+    <footer class="mt-10 border-t border-gray-100 bg-white/70 dark:border-gray-800 dark:bg-gray-900/70">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-        <p class="flex items-center justify-center gap-1 text-center text-xs text-gray-500">
+        <p class="flex items-center justify-center gap-1 text-center text-xs text-gray-500 dark:text-gray-400">
           <span>© {{ currentYear }} Scrum Poker</span>
           <span aria-hidden="true">·</span>
           <a
@@ -99,8 +115,10 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted, nextTick } from 'vue'
 import { usePokerSession } from '~/composables/usePokerSession'
+
+const THEME_MODE_KEY = 'scrum-poker-theme-mode'
 
 const {
   gameState,
@@ -115,10 +133,67 @@ const {
 
 const nameInput = ref(null)
 const currentYear = new Date().getFullYear()
+const themeMode = ref('system')
+const systemPrefersDark = ref(false)
+let mediaQuery = null
+
+const isDarkTheme = computed(() => {
+  if (themeMode.value === 'dark') return true
+  if (themeMode.value === 'light') return false
+  return systemPrefersDark.value
+})
+
+const applyThemeClass = () => {
+  if (typeof document === 'undefined') return
+
+  document.documentElement.classList.toggle('dark', isDarkTheme.value)
+  document.documentElement.style.colorScheme = isDarkTheme.value ? 'dark' : 'light'
+}
+
+const setThemeMode = (mode) => {
+  themeMode.value = mode
+
+  if (typeof localStorage === 'undefined') return
+  if (mode === 'system') {
+    localStorage.removeItem(THEME_MODE_KEY)
+  } else {
+    localStorage.setItem(THEME_MODE_KEY, mode)
+  }
+
+  applyThemeClass()
+}
+
+const toggleTheme = () => {
+  setThemeMode(isDarkTheme.value ? 'light' : 'dark')
+}
+
+const handleSystemThemeChange = (event) => {
+  systemPrefersDark.value = event.matches
+  if (themeMode.value === 'system') {
+    applyThemeClass()
+  }
+}
 
 const startEditing = async () => {
   startEditingName()
   await nextTick()
   nameInput.value?.focus()
 }
+
+onMounted(() => {
+  mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  systemPrefersDark.value = mediaQuery.matches
+
+  const savedThemeMode = localStorage.getItem(THEME_MODE_KEY)
+  if (savedThemeMode === 'light' || savedThemeMode === 'dark') {
+    themeMode.value = savedThemeMode
+  }
+
+  applyThemeClass()
+  mediaQuery.addEventListener('change', handleSystemThemeChange)
+})
+
+onBeforeUnmount(() => {
+  mediaQuery?.removeEventListener('change', handleSystemThemeChange)
+})
 </script>
