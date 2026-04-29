@@ -4,8 +4,8 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-3 py-3 md:flex-row md:items-center md:justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold text-lg">SP</span>
+            <div class="w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+              <span class="text-3xl leading-none" aria-hidden="true">🃏</span>
             </div>
             <div>
               <h1 class="text-xl leading-tight font-bold text-gray-900">Scrum Poker</h1>
