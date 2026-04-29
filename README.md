@@ -13,12 +13,10 @@ I was fed up with some ad-bloated and freemium limited Scrum Poker apps, so I us
 - 🎉 Emoji reactions for no reason
 
 ## (Un)planned improvements / Nice to haves
-- [ ] Create some logo
 - [ ] Add custom emoji reactions / improve existing reaction style & positioning
 - [ ] Add "nudge" option to bother procrastinating estimators
 - [ ] Add changelog and changelog subpage (or a popup?) - _maybe via markdown and by using @nuxt/content_
 - [ ] Use translations?
-- [ ] Add confetti effect when there's full alignment in estimations (matching votes by everyone)
 
 
 
