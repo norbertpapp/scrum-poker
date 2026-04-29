@@ -223,7 +223,13 @@
           <div
             v-for="card in pokerCards"
             :key="card.value"
+            role="button"
+            tabindex="0"
+            :aria-label="`Select vote ${card.display}`"
+            :aria-pressed="selectedCard?.value === card.value"
             @click="selectCard(card)"
+            @keydown.enter.prevent="selectCard(card)"
+            @keydown.space.prevent="selectCard(card)"
             class="poker-card aspect-[3/4] flex items-center justify-center"
             :class="{
               'selected': selectedCard?.value === card.value

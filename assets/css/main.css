@@ -37,6 +37,11 @@ html.dark {
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
+.poker-card:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
 .poker-card.selected {
   transform: scale(1.05);
   border-color: #3b82f6;
@@ -186,6 +191,10 @@ html.dark .poker-card {
   border-color: rgb(75 85 99);
   background-color: rgb(17 24 39);
   box-shadow: 0 8px 16px -6px rgb(0 0 0 / 0.45), 0 3px 8px -3px rgb(0 0 0 / 0.35);
+}
+
+html.dark .poker-card:focus-visible {
+  outline-color: #60a5fa;
 }
 
 html.dark .poker-card.selected {
