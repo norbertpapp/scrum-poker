@@ -64,7 +64,15 @@
     <div v-else class="animate-slide-up">
       <!-- Results -->
       <div v-if="gameState.votesRevealed" class="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-fade-in">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Results</h3>
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Results</h3>
+          <span
+            v-if="votesAreFullyAligned"
+            class="inline-flex items-center rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-semibold"
+          >
+            🎉 Perfect alignment
+          </span>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="text-center">
             <div class="text-3xl font-bold text-primary-600">{{ voteStatistics.average }}</div>
@@ -247,11 +255,27 @@
         </div>
       </div>
     </div>
+
+    <div v-if="confettiPieces.length" class="fixed inset-0 pointer-events-none overflow-hidden z-40">
+      <span
+        v-for="piece in confettiPieces"
+        :key="piece.id"
+        class="confetti-piece"
+        :style="{
+          left: piece.left + '%',
+          fontSize: piece.size + 'px',
+          animationDelay: piece.delay + 'ms',
+          animationDuration: piece.duration + 'ms',
+          '--confetti-drift': piece.drift + 'px',
+          '--confetti-rotate': piece.rotate + 'deg'
+        }"
+      >🎉</span>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { usePokerSession } from '~/composables/usePokerSession'
 
 definePageMeta({
@@ -274,6 +298,8 @@ const {
 
 const selectedCard = ref(null)
 const participantsView = ref('cards')
+const confettiPieces = ref([])
+let confettiTimeoutId = null
 
 // Emoji ping data
 const showEmojiPicker = ref(false)
@@ -325,9 +351,58 @@ const voteStatistics = computed(() => {
   return { average, mode, range }
 })
 
+const votesAreFullyAligned = computed(() => {
+  if (!gameState.votesRevealed || gameState.participants.length === 0) return false
+  if (gameState.participants.some(participant => !participant.hasVoted)) return false
+
+  const firstVote = gameState.participants[0]?.vote
+  return gameState.participants.every(participant => participant.vote === firstVote)
+})
+
+const triggerConfetti = () => {
+  if (confettiTimeoutId) {
+    clearTimeout(confettiTimeoutId)
+  }
+
+  confettiPieces.value = Array.from({ length: 24 }, (_, index) => {
+    const fromLeft = Math.random() < 0.5
+
+    return {
+    id: `${Date.now()}-${index}`,
+    left: fromLeft ? 4 + Math.random() * 18 : 78 + Math.random() * 18,
+    size: 20 + Math.random() * 12,
+    delay: Math.random() * 150,
+    duration: 1300 + Math.random() * 500,
+    drift: -80 + Math.random() * 160,
+    rotate: -240 + Math.random() * 480
+    }
+  })
+
+  confettiTimeoutId = setTimeout(() => {
+    confettiPieces.value = []
+    confettiTimeoutId = null
+  }, 2200)
+}
+
 watch(() => gameState.votesRevealed, (isRevealed, wasRevealed) => {
+  if (isRevealed && !wasRevealed && votesAreFullyAligned.value) {
+    triggerConfetti()
+  }
+
   if (!isRevealed && wasRevealed) {
     selectedCard.value = null
+    confettiPieces.value = []
+
+    if (confettiTimeoutId) {
+      clearTimeout(confettiTimeoutId)
+      confettiTimeoutId = null
+    }
+  }
+})
+
+onBeforeUnmount(() => {
+  if (confettiTimeoutId) {
+    clearTimeout(confettiTimeoutId)
   }
 })
 
@@ -366,3 +441,25 @@ useHead({
   ],
 })
 </script>
+
+<style scoped>
+.confetti-piece {
+  position: absolute;
+  bottom: -20px;
+  opacity: 0.98;
+  line-height: 1;
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(var(--confetti-drift), -110vh, 0) rotate(var(--confetti-rotate));
+    opacity: 0;
+  }
+}
+</style>

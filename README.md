@@ -14,7 +14,6 @@ I was fed up with some ad-bloated and freemium limited Scrum Poker apps, so I us
 
 ## (Un)planned improvements / Nice to haves
 - [ ] Create some logo
-- [ ] Get rid of Tailwind CSS (for some reason AI loves it)
 - [ ] Add custom emoji reactions / improve existing reaction style & positioning
 - [ ] Add "nudge" option to bother procrastinating estimators
 - [ ] Add changelog and changelog subpage (or a popup?) - _maybe via markdown and by using @nuxt/content_

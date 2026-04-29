@@ -7,7 +7,7 @@ export default defineNuxtConfig({
         lang: 'en',
       },
       link: [
-        { rel: 'icon', type: 'image/x-icon', href: './favicon.png' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
       ]
     }
   },
