@@ -69,6 +69,32 @@
     <main>
       <slot />
     </main>
+
+    <footer class="mt-10 border-t border-gray-100 bg-white/70">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <p class="flex items-center justify-center gap-1 text-center text-xs text-gray-500">
+          <span>© {{ currentYear }} Scrum Poker</span>
+          <span aria-hidden="true">·</span>
+          <a
+            href="https://github.com/norbertpapp/scrum-poker"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 hover:underline"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="h-3.5 w-3.5"
+              aria-hidden="true"
+            >
+              <path d="M12 2C6.477 2 2 6.596 2 12.267c0 4.537 2.865 8.387 6.839 9.746.5.094.682-.221.682-.49 0-.241-.009-.879-.014-1.726-2.782.617-3.369-1.374-3.369-1.374-.455-1.184-1.11-1.499-1.11-1.499-.908-.636.069-.623.069-.623 1.004.072 1.532 1.058 1.532 1.058.892 1.567 2.341 1.114 2.91.851.091-.664.349-1.114.635-1.37-2.221-.259-4.556-1.14-4.556-5.074 0-1.121.389-2.038 1.029-2.756-.103-.259-.446-1.303.097-2.716 0 0 .84-.277 2.75 1.053A9.43 9.43 0 0 1 12 6.844c.85.004 1.705.117 2.504.343 1.909-1.33 2.747-1.053 2.747-1.053.545 1.413.202 2.457.1 2.716.64.718 1.027 1.635 1.027 2.756 0 3.944-2.339 4.812-4.566 5.066.359.316.678.941.678 1.898 0 1.37-.012 2.475-.012 2.812 0 .271.18.588.688.488C19.138 20.65 22 16.802 22 12.267 22 6.596 17.523 2 12 2Z" />
+            </svg>
+            GitHub
+          </a>
+        </p>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -88,6 +114,7 @@ const {
 } = usePokerSession()
 
 const nameInput = ref(null)
+const currentYear = new Date().getFullYear()
 
 const startEditing = async () => {
   startEditingName()
