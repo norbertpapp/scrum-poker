@@ -59,7 +59,7 @@
               class="btn-secondary text-red-600 hover:bg-red-50"
               @click="handleLeaveRoom"
             >
-              Leave Room
+              ❌ Leave Room
             </button>
           </div>
         </div>
