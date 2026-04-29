@@ -2,37 +2,37 @@
   <div>
     <header class="bg-white shadow-sm border-b border-gray-100">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-4">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-purple-600 rounded-lg flex items-center justify-center">
+        <div class="flex flex-col gap-3 py-3 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
               <span class="text-white font-bold text-lg">SP</span>
             </div>
             <div>
-              <h1 class="text-xl font-bold text-gray-900">Scrum Poker</h1>
-              <p class="text-sm text-gray-500">Planning made simple</p>
+              <h1 class="text-xl leading-tight font-bold text-gray-900">Scrum Poker</h1>
+              <p class="text-sm leading-tight text-gray-500">Planning made simple</p>
             </div>
           </div>
 
-          <div v-if="gameState.roomJoined" class="flex items-center space-x-4">
-            <div class="text-right">
-              <p class="text-sm font-semibold text-gray-900">Room: {{ gameState.roomCode }}</p>
-              <p class="text-xs text-gray-500">{{ gameState.participants.length }} participants</p>
+          <div v-if="gameState.roomJoined" class="flex flex-wrap items-center justify-end gap-2 md:gap-3">
+            <div class="rounded-lg bg-gray-50 px-3 py-1.5 text-right">
+              <p class="text-sm font-semibold leading-tight text-gray-900">Room: {{ gameState.roomCode }}</p>
+              <p class="text-xs leading-tight text-gray-500">{{ gameState.participants.length }} participants</p>
             </div>
 
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-1 rounded-lg bg-gray-50 px-3 py-1.5">
               <span class="text-sm text-gray-500">You:</span>
               <input
                 v-if="editingName"
                 ref="nameInput"
                 v-model="newPlayerName"
                 type="text"
-                class="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                class="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 @keyup.enter="handleNameChange"
                 @blur="handleNameChange"
               />
               <button
                 v-if="editingName"
-                class="text-sm text-primary-600 hover:text-primary-700"
+                class="text-sm font-medium text-primary-600 hover:text-primary-700"
                 @click="handleNameChange"
               >
                 Save
@@ -40,7 +40,7 @@
               <span v-else class="text-sm font-medium text-gray-900">{{ playerName }}</span>
               <button
                 v-if="!editingName"
-                class="text-sm text-primary-600 hover:text-primary-700"
+                class="text-sm font-medium text-primary-600 hover:text-primary-700"
                 @click="startEditing"
               >
                 Edit
@@ -48,7 +48,7 @@
             </div>
 
             <button
-              class="btn-secondary flex items-center space-x-2"
+              class="btn-secondary flex h-10 items-center gap-2"
               @click="copyRoomUrl"
             >
               <span>📋</span>
@@ -56,7 +56,7 @@
             </button>
 
             <button
-              class="btn-secondary text-red-600 hover:bg-red-50"
+              class="btn-secondary h-10 text-red-600 hover:bg-red-50"
               @click="handleLeaveRoom"
             >
               ❌ Leave Room
