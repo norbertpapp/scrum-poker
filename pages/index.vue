@@ -254,6 +254,10 @@
 import { ref, computed, watch } from 'vue'
 import { usePokerSession } from '~/composables/usePokerSession'
 
+definePageMeta({
+  path: '/:roomCode?'
+})
+
 const {
   connected,
   gameState,

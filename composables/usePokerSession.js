@@ -9,6 +9,13 @@ export const usePokerSession = () => {
   const route = useRoute()
   const router = useRouter()
 
+  const resolveRouteRoomCode = (routeRoomCode) => {
+    if (Array.isArray(routeRoomCode)) {
+      return routeRoomCode[0] || ''
+    }
+    return routeRoomCode || ''
+  }
+
   const {
     connected,
     gameState,
@@ -25,11 +32,7 @@ export const usePokerSession = () => {
 
   const playerName = useState('scrum-poker-player-name', () => '')
   const roomCode = useState('scrum-poker-room-code', () => {
-    const queryRoom = route.query.room
-    if (Array.isArray(queryRoom)) {
-      return queryRoom[0] || ''
-    }
-    return queryRoom || ''
+    return resolveRouteRoomCode(route.params.roomCode)
   })
   const playerId = useState('scrum-poker-player-id', () => Date.now().toString())
   const editingName = useState('scrum-poker-editing-name', () => false)
@@ -46,21 +49,14 @@ export const usePokerSession = () => {
   if (import.meta.client && !sideEffectsInitialized) {
     sideEffectsInitialized = true
 
-    const resolveQueryRoomCode = (queryRoom) => {
-      if (Array.isArray(queryRoom)) {
-        return queryRoom[0] || ''
-      }
-      return queryRoom || ''
-    }
-
     watch(playerName, (name) => {
       if (name.trim()) {
         localStorage.setItem(PLAYER_NAME_KEY, name.trim())
       }
     })
 
-    watch(() => route.query.room, (queryRoom) => {
-      const nextRoomCode = resolveQueryRoomCode(queryRoom)
+    watch(() => route.params.roomCode, (routeRoomCode) => {
+      const nextRoomCode = resolveRouteRoomCode(routeRoomCode)
 
       if (!gameState.roomJoined && nextRoomCode && roomCode.value !== nextRoomCode) {
         roomCode.value = nextRoomCode
@@ -73,8 +69,8 @@ export const usePokerSession = () => {
       }
 
       roomCode.value = newRoomCode
-      if (route.query.room !== newRoomCode) {
-        router.replace({ query: { room: newRoomCode } })
+      if (resolveRouteRoomCode(route.params.roomCode) !== newRoomCode) {
+        router.replace({ path: `/${encodeURIComponent(newRoomCode)}` })
       }
     })
   }
@@ -98,14 +94,14 @@ export const usePokerSession = () => {
     roomCode.value = ''
     editingName.value = false
     newPlayerName.value = ''
-    router.replace({ query: {} })
+    router.replace({ path: '/' })
   }
 
   const getRoomUrl = () => {
     if (!import.meta.client) {
       return ''
     }
-    return `${window.location.origin}${window.location.pathname}?room=${gameState.roomCode}`
+    return `${window.location.origin}/${encodeURIComponent(gameState.roomCode)}`
   }
 
   const copyRoomUrl = async () => {
