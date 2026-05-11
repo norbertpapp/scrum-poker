@@ -28,12 +28,12 @@ export const useWebSocket = () => {
       if (!wsUrl) return
 
       ws.value = new WebSocket(wsUrl)
-      
+
       ws.value.onopen = () => {
         connected.value = true
         console.log('Connected to WebSocket server')
       }
-      
+
       ws.value.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data)
@@ -42,11 +42,11 @@ export const useWebSocket = () => {
           console.error('Error parsing WebSocket message:', error)
         }
       }
-      
+
       ws.value.onclose = () => {
         connected.value = false
         console.log('Disconnected from WebSocket server')
-        
+
         // Attempt to reconnect after 3 seconds
         reconnectTimeout = setTimeout(() => {
           if (!connected.value && activeConsumers > 0) {
@@ -54,7 +54,7 @@ export const useWebSocket = () => {
           }
         }, 3000)
       }
-      
+
       ws.value.onerror = (error) => {
         console.error('WebSocket error:', error)
       }
@@ -90,7 +90,17 @@ export const useWebSocket = () => {
       case 'PING_RECEIVED':
         handlePingReceived(message.data)
         break
+      case 'KICKED':
+        handleKicked(message.data)
+        break
     }
+  }
+
+  const resetRoomState = () => {
+    gameState.roomJoined = false
+    gameState.participants = []
+    gameState.votesRevealed = false
+    gameState.roomCode = ''
   }
 
   const updateGameState = (data) => {
@@ -107,11 +117,19 @@ export const useWebSocket = () => {
       fromPlayer: data.fromPlayer,
       timestamp: data.timestamp
     })
-    
+
     // Remove ping after 3 seconds
     setTimeout(() => {
       pings.value = pings.value.filter(ping => ping.timestamp !== data.timestamp)
     }, 3000)
+  }
+
+  const handleKicked = (data) => {
+    resetRoomState()
+
+    if (import.meta.client && data?.reason) {
+      window.alert(data.reason)
+    }
   }
 
   // Room actions
@@ -121,10 +139,7 @@ export const useWebSocket = () => {
 
   const leaveRoom = () => {
     sendMessage('LEAVE_ROOM', {})
-    gameState.roomJoined = false
-    gameState.participants = []
-    gameState.votesRevealed = false
-    gameState.roomCode = ''
+    resetRoomState()
   }
 
   const vote = (voteValue) => {
@@ -149,6 +164,10 @@ export const useWebSocket = () => {
 
   const changeName = (newName) => {
     sendMessage('CHANGE_NAME', { newName })
+  }
+
+  const kickParticipant = (playerId) => {
+    sendMessage('KICK_PARTICIPANT', { playerId })
   }
 
   onMounted(() => {
@@ -176,7 +195,8 @@ export const useWebSocket = () => {
     revealVotes,
     resetVotes,
     sendPing,
-    changeName
+    changeName,
+    kickParticipant
   }
 
 }

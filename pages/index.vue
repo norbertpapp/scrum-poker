@@ -92,7 +92,15 @@
       <!-- Participants -->
       <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 dark:bg-gray-800">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Participants</h3>
+          <div class="flex items-center gap-2">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Participants</h3>
+            <span
+              v-if="kickModeEnabled"
+              class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-900/40 dark:text-red-300"
+            >
+              Kick mode
+            </span>
+          </div>
           <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 w-full sm:w-auto dark:border-gray-700 dark:bg-gray-900">
             <button
               @click="participantsView = 'cards'"
@@ -134,6 +142,13 @@
               <span v-else-if="!gameState.votesRevealed" class="text-primary-600">✓ Voted</span>
               <span v-else class="font-bold text-lg text-gray-900 dark:text-gray-100">{{ getVoteDisplay(participant.vote) }}</span>
             </div>
+            <button
+              v-if="canKickParticipant(participant)"
+              @click="handleKickParticipant(participant)"
+              class="mt-2 inline-flex items-center rounded-md bg-red-600 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-red-700"
+            >
+              Kick
+            </button>
           </div>
         </div>
 
@@ -144,6 +159,7 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Participant</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Status</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Vote</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-700 dark:bg-gray-800">
@@ -157,6 +173,15 @@
                   <span v-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500 font-normal">—</span>
                   <span v-else-if="!gameState.votesRevealed" class="text-gray-500 dark:text-gray-400 font-normal">Hidden</span>
                   <span v-else>{{ getVoteDisplay(participant.vote) }}</span>
+                </td>
+                <td class="px-4 py-3 text-sm">
+                  <button
+                    v-if="canKickParticipant(participant)"
+                    @click="handleKickParticipant(participant)"
+                    class="inline-flex items-center rounded-md bg-red-600 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-red-700"
+                  >
+                    Kick
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -281,7 +306,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
 import { usePokerSession } from '~/composables/usePokerSession'
 
 definePageMeta({
@@ -297,7 +322,9 @@ const {
   revealVotes,
   resetVotes,
   sendPing,
+  kickParticipant,
   playerName,
+  playerId,
   roomCode,
   handleJoinRoom
 } = usePokerSession()
@@ -305,7 +332,11 @@ const {
 const selectedCard = ref(null)
 const participantsView = ref('cards')
 const confettiPieces = ref([])
+const kickModeEnabled = ref(false)
 let confettiTimeoutId = null
+const KICK_MODE_UNLOCK_TEXT = 'roundhousekick'
+const KICK_MODE_BUFFER_MAX = KICK_MODE_UNLOCK_TEXT.length
+let typedKickModeBuffer = ''
 
 // Emoji ping data
 const showEmojiPicker = ref(false)
@@ -407,9 +438,21 @@ watch(() => gameState.votesRevealed, (isRevealed, wasRevealed) => {
 })
 
 onBeforeUnmount(() => {
+  if (import.meta.client) {
+    window.removeEventListener('keydown', handleKickModeUnlock)
+  }
+
   if (confettiTimeoutId) {
     clearTimeout(confettiTimeoutId)
   }
+})
+
+onMounted(() => {
+  if (!import.meta.client) {
+    return
+  }
+
+  window.addEventListener('keydown', handleKickModeUnlock)
 })
 
 // Helper function to get display value for votes
@@ -437,6 +480,47 @@ const handleResetVotes = () => {
 const handleSendPing = (emoji) => {
   sendPing(emoji)
   showEmojiPicker.value = false
+}
+
+const handleKickModeUnlock = (event) => {
+  if (kickModeEnabled.value) {
+    return
+  }
+
+  if (event.ctrlKey || event.altKey || event.metaKey || event.key.length !== 1) {
+    return
+  }
+
+  typedKickModeBuffer = `${typedKickModeBuffer}${event.key.toLowerCase()}`.slice(-KICK_MODE_BUFFER_MAX)
+
+  if (typedKickModeBuffer === KICK_MODE_UNLOCK_TEXT) {
+    kickModeEnabled.value = true
+  }
+}
+
+const canKickParticipant = (participant) => {
+  if (!kickModeEnabled.value) {
+    return false
+  }
+
+  if (!participant || participant.id === playerId.value) {
+    return false
+  }
+
+  return !participant.hasVoted
+}
+
+const handleKickParticipant = (participant) => {
+  if (!canKickParticipant(participant)) {
+    return
+  }
+
+  const shouldKick = window.confirm(`Kick ${participant.name} for being away/unresponsive?`)
+  if (!shouldKick) {
+    return
+  }
+
+  kickParticipant(participant.id)
 }
 
 // Meta

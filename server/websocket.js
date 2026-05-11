@@ -6,6 +6,50 @@ class ScrumPokerServer {
     this.clients = new Map();
   }
 
+  handleKickParticipant(ws, message) {
+    const requesterInfo = this.clients.get(ws);
+    if (!requesterInfo) return;
+
+    const { roomCode } = requesterInfo;
+    const room = this.rooms.get(roomCode);
+    const targetPlayerId = message?.data?.playerId;
+
+    if (!room || !targetPlayerId) return;
+
+    const targetParticipant = room.participants.get(targetPlayerId);
+    if (!targetParticipant) return;
+
+    room.participants.delete(targetPlayerId);
+
+    let targetSocket = null;
+    for (const [clientSocket, clientInfo] of this.clients.entries()) {
+      if (clientInfo.playerId === targetPlayerId && clientInfo.roomCode === roomCode) {
+        targetSocket = clientSocket;
+        this.clients.delete(clientSocket);
+        break;
+      }
+    }
+
+    if (targetSocket && targetSocket.readyState === 1) {
+      targetSocket.send(JSON.stringify({
+        type: 'KICKED',
+        data: {
+          roomCode,
+          reason: 'You were removed from the room.'
+        }
+      }));
+      targetSocket.close();
+    }
+
+    if (room.participants.size === 0) {
+      this.rooms.delete(roomCode);
+      return;
+    }
+
+    this.broadcastRoomState(roomCode);
+    console.log(`Player ${targetPlayerId} was kicked from room ${roomCode}`);
+  }
+
   start(port = 8080) {
     this.wss = new WebSocketServer({ port });
     
@@ -54,6 +98,9 @@ class ScrumPokerServer {
         break;
       case 'CHANGE_NAME':
         this.handleChangeName(ws, message);
+        break;
+      case 'KICK_PARTICIPANT':
+        this.handleKickParticipant(ws, message);
         break;
     }
   }

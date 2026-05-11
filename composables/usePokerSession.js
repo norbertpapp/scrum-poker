@@ -27,7 +27,8 @@ export const usePokerSession = () => {
     revealVotes,
     resetVotes,
     sendPing,
-    changeName
+    changeName,
+    kickParticipant
   } = useWebSocket()
 
   const playerName = useState('scrum-poker-player-name', () => '')
@@ -136,7 +137,9 @@ export const usePokerSession = () => {
     revealVotes,
     resetVotes,
     sendPing,
+    kickParticipant,
     playerName,
+    playerId,
     roomCode,
     editingName,
     newPlayerName,
