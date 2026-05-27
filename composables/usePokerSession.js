@@ -8,6 +8,7 @@ let playerNameHydrated = false
 export const usePokerSession = () => {
   const route = useRoute()
   const router = useRouter()
+  const runtimeConfig = useRuntimeConfig()
 
   const resolveRouteRoomCode = (routeRoomCode) => {
     if (Array.isArray(routeRoomCode)) {
@@ -102,7 +103,11 @@ export const usePokerSession = () => {
     if (!import.meta.client) {
       return ''
     }
-    return `${window.location.origin}/${encodeURIComponent(gameState.roomCode)}`
+    const basePath = runtimeConfig.app.baseURL.endsWith('/')
+      ? runtimeConfig.app.baseURL
+      : `${runtimeConfig.app.baseURL}/`
+
+    return new URL(`${basePath}${encodeURIComponent(gameState.roomCode)}`, window.location.origin).toString()
   }
 
   const copyRoomUrl = async () => {
