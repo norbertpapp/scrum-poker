@@ -17,6 +17,8 @@ I was fed up with some ad-bloated and freemium limited Scrum Poker apps, so I us
 - [ ] Add "nudge" option to bother procrastinating estimators
 - [ ] Add changelog and changelog subpage (or a popup?) - _maybe via markdown and by using @nuxt/content_
 - [ ] Use translations?
+- [ ] Load Google Fonts locally
+- [ ] Reduce layout shifts
 
 
 
