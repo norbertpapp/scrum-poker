@@ -91,6 +91,13 @@
         <p class="flex items-center justify-center gap-1 text-center text-xs text-gray-500 dark:text-gray-400">
           <span>© {{ currentYear }} Scrum Poker</span>
           <span aria-hidden="true">·</span>
+          <NuxtLink
+            to="/changelog"
+            class="text-primary-600 hover:text-primary-700 hover:underline"
+          >
+            Changelog
+          </NuxtLink>
+          <span aria-hidden="true">·</span>
           <a
             href="https://github.com/norbertpapp/scrum-poker"
             target="_blank"

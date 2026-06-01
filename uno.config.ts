@@ -1,7 +1,7 @@
-import { defineConfig, presetWind } from 'unocss'
+import { defineConfig, presetTypography, presetWind3 } from 'unocss'
 
 export default defineConfig({
-  presets: [presetWind({ dark: 'class' })],
+  presets: [presetWind3({ dark: 'class' }), presetTypography(),],
   theme: {
     colors: {
       primary: {

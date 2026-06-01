@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@unocss/nuxt": "^66.5.4",
-    "nuxt": "^3.13.0"
+    "markdown-it-ts": "^1.0.0",
+    "nuxt": "^3.13.0",
+    "sanitize-html": "^2.17.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

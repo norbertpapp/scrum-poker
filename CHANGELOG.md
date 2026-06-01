@@ -3,6 +3,7 @@
 ## 2026-06-01
 
 ### Features
+- add `/changelog` page with server-rendered markdown content
 - add participant kick functionality with hidden keyboard shortcut activation (`71eb704`, `2026-05-11`)
 - add keyboard navigation and accessibility to poker card selection (`570042b`, `2026-04-30`)
 - add dark mode support with theme toggle and system preference detection (`ce7ab8c`, `2026-04-30`)
@@ -11,9 +12,13 @@
 - add emoji to leave room button (`00294e5`, `2026-04-29`)
 
 ### Fixes
+- fix changelog API file loading by reading `CHANGELOG.md` from filesystem
+- add fallback message when changelog API response is unavailable
 - use `baseURL` from runtime config for room URL generation (`ccd4789`, `2026-05-27`)
 
 ### Refactors
+- move markdown rendering from client page to server API endpoint
+- reduce changelog page typography overrides to preserve Uno theme styles
 - replace text logo with playing card emoji and increase logo size (`6cd45c9`, `2026-04-30`)
 - migrate room code from query parameter to path parameter (`91d3818`, `2026-04-30`)
 - shorten leave room button text (`198d492`, `2026-04-30`)
@@ -24,6 +29,9 @@
 - add local font loading and layout shift reduction to roadmap (`6683d24`, `2026-05-27`)
 
 ### Chore
+- add `sanitize-html` dependency and sanitize changelog HTML before `v-html`
+- add footer link to `/changelog`
+- enable UnoCSS typography preset (`presetTypography`)
 - add `package-lock.json` for WebSocket server dependencies (`c35281c`, `2026-04-30`)
 
 ### Cleanup
