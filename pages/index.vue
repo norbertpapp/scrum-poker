@@ -140,7 +140,15 @@
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
               <span v-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500">Waiting...</span>
               <span v-else-if="!gameState.votesRevealed" class="text-primary-600">✓ Voted</span>
-              <span v-else class="font-bold text-lg text-gray-900 dark:text-gray-100">{{ getVoteDisplay(participant.vote) }}</span>
+              <span v-else class="font-bold text-lg text-gray-900 dark:text-gray-100">
+                <img
+                  v-if="isCoffeeEmojiVote(participant.vote)"
+                  :src="getCoffeeEmojiSrcFromVote(participant.vote)"
+                  alt="Coffee vote emoji"
+                  class="h-8 w-8 rounded object-contain mx-auto"
+                />
+                <span v-else>{{ getVoteDisplay(participant.vote) }}</span>
+              </span>
             </div>
             <button
               v-if="canKickParticipant(participant)"
@@ -172,7 +180,15 @@
                 <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
                   <span v-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500 font-normal">—</span>
                   <span v-else-if="!gameState.votesRevealed" class="text-gray-500 dark:text-gray-400 font-normal">Hidden</span>
-                  <span v-else>{{ getVoteDisplay(participant.vote) }}</span>
+                  <span v-else>
+                    <img
+                      v-if="isCoffeeEmojiVote(participant.vote)"
+                      :src="getCoffeeEmojiSrcFromVote(participant.vote)"
+                      alt="Coffee vote emoji"
+                      class="h-8 w-8 rounded object-contain"
+                    />
+                    <span v-else>{{ getVoteDisplay(participant.vote) }}</span>
+                  </span>
                 </td>
                 <td class="px-4 py-3 text-sm">
                   <button
@@ -244,6 +260,46 @@
           Choose Your Estimate
           <span v-if="gameState.votesRevealed" class="text-sm text-gray-500 dark:text-gray-400 font-normal ml-2">(You can still change your vote)</span>
         </h3>
+        <div class="mb-4">
+          <div class="relative inline-block">
+            <button
+              type="button"
+              @click="showCoffeeEmojiPicker = !showCoffeeEmojiPicker"
+              class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+              title="Pick custom vote"
+            >
+              <span>Pick custom vote</span>
+              <img
+                v-if="selectedCoffeeEmojiSrc"
+                :src="selectedCoffeeEmojiSrc"
+                alt="Selected coffee emoji"
+                class="h-6 w-6 rounded object-contain"
+              />
+              <span v-else class="text-lg">☕</span>
+            </button>
+
+            <div
+              v-if="showCoffeeEmojiPicker"
+              class="absolute left-0 top-full mt-2 rounded-lg border border-gray-200 bg-white p-3 shadow-xl z-50 dark:border-gray-700 dark:bg-gray-800"
+              style="width: max-content;"
+            >
+              <div class="grid grid-cols-3 gap-2">
+                <button
+                  v-for="emoji in coffeeEmojiOptions"
+                  :key="emoji.fileName"
+                  type="button"
+                  @click="handleSelectCoffeeEmoji(emoji.fileName)"
+                  class="h-11 w-11 rounded-lg border-2 bg-white p-1 transition-colors duration-200 dark:bg-gray-900"
+                  :class="selectedCoffeeEmojiFile === emoji.fileName ? 'border-primary-500' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-500'"
+                  :title="emoji.label"
+                >
+                  <span v-if="emoji.emoji" class="text-2xl">{{ emoji.emoji }}</span>
+                  <img v-else :src="emoji.src" :alt="emoji.label" class="h-full w-full rounded object-contain" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4">
           <div
             v-for="card in pokerCards"
@@ -251,16 +307,25 @@
             role="button"
             tabindex="0"
             :aria-label="`Select vote ${card.display}`"
-            :aria-pressed="selectedCard?.value === card.value"
+            :aria-pressed="isCardSelected(card)"
             @click="selectCard(card)"
             @keydown.enter.prevent="selectCard(card)"
             @keydown.space.prevent="selectCard(card)"
             class="poker-card aspect-[3/4] flex items-center justify-center"
             :class="{
-              'selected': selectedCard?.value === card.value
+              'selected': isCardSelected(card)
             }"
           >
-            <span class="text-2xl font-bold" :class="card.color">
+            <template v-if="card.value === 'coffee'">
+              <img
+                v-if="selectedCoffeeEmojiSrc"
+                :src="selectedCoffeeEmojiSrc"
+                alt="Selected coffee vote emoji"
+                class="h-12 w-12 rounded object-contain"
+              />
+              <span v-else class="text-3xl">☕</span>
+            </template>
+            <span v-else class="text-2xl font-bold" :class="card.color">
               {{ card.display }}
             </span>
           </div>
@@ -329,18 +394,28 @@ const {
   handleJoinRoom
 } = usePokerSession()
 
-const selectedCard = ref(null)
+const selectedVote = ref(null)
 const participantsView = ref('cards')
 const confettiPieces = ref([])
 const kickModeEnabled = ref(false)
 let confettiTimeoutId = null
 const KICK_MODE_UNLOCK_TEXT = 'roundhousekick'
 const KICK_MODE_BUFFER_MAX = KICK_MODE_UNLOCK_TEXT.length
+const COFFEE_EMOJI_VOTE_PREFIX = 'coffee_emoji:'
 let typedKickModeBuffer = ''
 
 // Emoji ping data
 const showEmojiPicker = ref(false)
+const showCoffeeEmojiPicker = ref(false)
 const emojiOptions = ['👍', '👎', '🤔', '😄', '😮', '🎉', '⚡', '🔥', '💡', '❤️', '👏', '🚀']
+const coffeeEmojiOptions = [
+  { fileName: 'default', label: 'Coffee', emoji: '☕' },
+  { fileName: 'dog-scared.png', label: 'Scared dog', src: '/img/emojis/dog-scared.png' },
+  { fileName: 'scared-hamster-cross.png', label: 'Scared hamster', src: '/img/emojis/scared-hamster-cross.png' },
+  { fileName: 'screaming-cat.png', label: 'Screaming cat', src: '/img/emojis/screaming-cat.png' },
+  { fileName: 'shrugge.png', label: 'Shrugge', src: '/img/emojis/shrugge.png' }
+]
+const selectedCoffeeEmojiFile = ref('default')
 
 // Poker cards configuration
 const pokerCards = [
@@ -388,6 +463,11 @@ const voteStatistics = computed(() => {
   return { average, mode, range }
 })
 
+const selectedCoffeeEmojiSrc = computed(() => {
+  const selected = coffeeEmojiOptions.find(emoji => emoji.fileName === selectedCoffeeEmojiFile.value)
+  return selected?.src || null
+})
+
 const votesAreFullyAligned = computed(() => {
   if (!gameState.votesRevealed || gameState.participants.length === 0) return false
   if (gameState.participants.some(participant => !participant.hasVoted)) return false
@@ -427,7 +507,7 @@ watch(() => gameState.votesRevealed, (isRevealed, wasRevealed) => {
   }
 
   if (!isRevealed && wasRevealed) {
-    selectedCard.value = null
+    selectedVote.value = null
     confettiPieces.value = []
 
     if (confettiTimeoutId) {
@@ -435,6 +515,20 @@ watch(() => gameState.votesRevealed, (isRevealed, wasRevealed) => {
       confettiTimeoutId = null
     }
   }
+})
+
+watch(selectedCoffeeEmojiFile, () => {
+  if (selectedVote.value !== 'coffee' && !isCoffeeEmojiVote(selectedVote.value)) {
+    return
+  }
+
+  const updatedCoffeeVote = getSelectedCoffeeVoteValue()
+  if (updatedCoffeeVote === selectedVote.value) {
+    return
+  }
+
+  selectedVote.value = updatedCoffeeVote
+  vote(updatedCoffeeVote)
 })
 
 onBeforeUnmount(() => {
@@ -461,14 +555,53 @@ const getVoteDisplay = (vote) => {
   return vote
 }
 
+const getCoffeeEmojiVoteValue = (fileName) => `${COFFEE_EMOJI_VOTE_PREFIX}${fileName}`
+
+const getSelectedCoffeeVoteValue = () => {
+  if (selectedCoffeeEmojiFile.value === 'default') {
+    return 'coffee'
+  }
+
+  return getCoffeeEmojiVoteValue(selectedCoffeeEmojiFile.value)
+}
+
+const isCoffeeEmojiVote = (vote) => {
+  return typeof vote === 'string' && vote.startsWith(COFFEE_EMOJI_VOTE_PREFIX)
+}
+
+const getCoffeeEmojiSrcFromVote = (vote) => {
+  if (!isCoffeeEmojiVote(vote)) {
+    return null
+  }
+
+  const fileName = vote.slice(COFFEE_EMOJI_VOTE_PREFIX.length)
+  const match = coffeeEmojiOptions.find(emoji => emoji.fileName === fileName)
+  return match ? match.src : null
+}
+
+const isCardSelected = (card) => {
+  if (card.value === 'coffee') {
+    return selectedVote.value === 'coffee' || isCoffeeEmojiVote(selectedVote.value)
+  }
+
+  return selectedVote.value === card.value
+}
+
 // Methods
 const selectCard = (card) => {
-  selectedCard.value = card
+  if (card.value === 'coffee') {
+    const coffeeVoteValue = getSelectedCoffeeVoteValue()
+    selectedVote.value = coffeeVoteValue
+    vote(coffeeVoteValue)
+    return
+  }
+
+  selectedVote.value = card.value
   vote(card.value)
 }
 
 const clearSelection = () => {
-  selectedCard.value = null
+  selectedVote.value = null
   clearVote()
 }
 
@@ -480,6 +613,11 @@ const handleResetVotes = () => {
 const handleSendPing = (emoji) => {
   sendPing(emoji)
   showEmojiPicker.value = false
+}
+
+const handleSelectCoffeeEmoji = (fileName) => {
+  selectedCoffeeEmojiFile.value = fileName
+  showCoffeeEmojiPicker.value = false
 }
 
 const handleKickModeUnlock = (event) => {
