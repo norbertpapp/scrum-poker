@@ -393,6 +393,15 @@ const {
   roomCode,
   handleJoinRoom
 } = usePokerSession()
+const runtimeConfig = useRuntimeConfig()
+const appBaseUrl = runtimeConfig.app.baseURL || '/'
+
+const resolvePublicAssetPath = (path) => {
+  const normalizedBase = appBaseUrl.endsWith('/') ? appBaseUrl.slice(0, -1) : appBaseUrl
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+
+  return normalizedBase ? `${normalizedBase}${normalizedPath}` : normalizedPath
+}
 
 const selectedVote = ref(null)
 const participantsView = ref('cards')
@@ -410,10 +419,10 @@ const showCoffeeEmojiPicker = ref(false)
 const emojiOptions = ['👍', '👎', '🤔', '😄', '😮', '🎉', '⚡', '🔥', '💡', '❤️', '👏', '🚀']
 const coffeeEmojiOptions = [
   { fileName: 'default', label: 'Coffee', emoji: '☕' },
-  { fileName: 'dog-scared.png', label: 'Scared dog', src: '/img/emojis/dog-scared.png' },
-  { fileName: 'scared-hamster-cross.png', label: 'Scared hamster', src: '/img/emojis/scared-hamster-cross.png' },
-  { fileName: 'screaming-cat.png', label: 'Screaming cat', src: '/img/emojis/screaming-cat.png' },
-  { fileName: 'shrugge.png', label: 'Shrugge', src: '/img/emojis/shrugge.png' }
+  { fileName: 'dog-scared.png', label: 'Scared dog', src: resolvePublicAssetPath('/img/emojis/dog-scared.png') },
+  { fileName: 'scared-hamster-cross.png', label: 'Scared hamster', src: resolvePublicAssetPath('/img/emojis/scared-hamster-cross.png') },
+  { fileName: 'screaming-cat.png', label: 'Screaming cat', src: resolvePublicAssetPath('/img/emojis/screaming-cat.png') },
+  { fileName: 'shrugge.png', label: 'Shrugge', src: resolvePublicAssetPath('/img/emojis/shrugge.png') }
 ]
 const selectedCoffeeEmojiFile = ref('default')
 
