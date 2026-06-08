@@ -4,6 +4,14 @@
 
 ### Features
 - add custom vote emoji picker with meme options for coffee vote (`f82e6e2`, `2026-06-08`)
+- change coffee custom vote selection from dropdown to popup picker (`f82e6e2`, `2026-06-08`)
+
+### Fixes
+- fix coffee vote emoji updates after vote so reveal shows latest selected emoji (`f82e6e2`, `2026-06-08`)
+- fix coffee emoji asset URLs on GitHub Pages subpath deployments via `baseURL` (`a94c1a4`, `2026-06-08`)
+
+### Refactors
+- extract public asset path resolution into `usePublicAssetPath` composable (`c4f5544`, `2026-06-08`)
 
 ## 2026-06-01
 
