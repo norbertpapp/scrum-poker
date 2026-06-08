@@ -167,7 +167,7 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Participant</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Status</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Vote</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Actions</th>
+                <th v-if="kickModeEnabled" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-700 dark:bg-gray-800">
@@ -190,7 +190,7 @@
                     <span v-else>{{ getVoteDisplay(participant.vote) }}</span>
                   </span>
                 </td>
-                <td class="px-4 py-3 text-sm">
+                <td v-if="kickModeEnabled" class="px-4 py-3 text-sm">
                   <button
                     v-if="canKickParticipant(participant)"
                     @click="handleKickParticipant(participant)"
