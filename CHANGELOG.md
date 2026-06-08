@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-06-08
+
+### Features
+- add custom vote emoji picker with meme options for coffee vote (`f82e6e2`, `2026-06-08`)
+
 ## 2026-06-01
 
 ### Features
