@@ -393,15 +393,7 @@ const {
   roomCode,
   handleJoinRoom
 } = usePokerSession()
-const runtimeConfig = useRuntimeConfig()
-const appBaseUrl = runtimeConfig.app.baseURL || '/'
-
-const resolvePublicAssetPath = (path) => {
-  const normalizedBase = appBaseUrl.endsWith('/') ? appBaseUrl.slice(0, -1) : appBaseUrl
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`
-
-  return normalizedBase ? `${normalizedBase}${normalizedPath}` : normalizedPath
-}
+const { resolvePublicAssetPath } = usePublicAssetPath()
 
 const selectedVote = ref(null)
 const participantsView = ref('cards')
