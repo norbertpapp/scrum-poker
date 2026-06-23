@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-06-23
+
+### Features
+- add median to revealed session results statistics (`ca94087`, `2026-06-23`)
+
 ## 2026-06-08
 
 ### Features
