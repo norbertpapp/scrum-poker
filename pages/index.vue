@@ -73,10 +73,14 @@
             🎉 Perfect alignment
           </span>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div class="text-center">
             <div class="text-3xl font-bold text-primary-600">{{ voteStatistics.average }}</div>
             <div class="text-sm text-gray-500 dark:text-gray-400">Average</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold text-sky-600">{{ voteStatistics.median }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Median</div>
           </div>
           <div class="text-center">
             <div class="text-3xl font-bold text-green-600">{{ voteStatistics.mode }}</div>
@@ -444,16 +448,23 @@ const votedCount = computed(() => {
 })
 
 const voteStatistics = computed(() => {
-  if (!gameState.votesRevealed) return { average: 0, mode: 0, range: '0-0' }
+  if (!gameState.votesRevealed) return { average: 0, median: 0, mode: 0, range: '0-0' }
   
   const numericVotes = gameState.participants
     .map(p => p.vote)
     .filter(vote => typeof vote === 'number' && !isNaN(vote))
   
-  if (numericVotes.length === 0) return { average: 'N/A', mode: 'N/A', range: 'N/A' }
-  if (numericVotes.length === 1) return { average: numericVotes[0], mode: numericVotes[0], range: 'N/A' }
+  if (numericVotes.length === 0) return { average: 'N/A', median: 'N/A', mode: 'N/A', range: 'N/A' }
+  if (numericVotes.length === 1) {
+    return { average: numericVotes[0], median: numericVotes[0], mode: numericVotes[0], range: 'N/A' }
+  }
   
   const average = (numericVotes.reduce((a, b) => a + b, 0) / numericVotes.length).toFixed(1)
+  const sortedVotes = [...numericVotes].sort((a, b) => a - b)
+  const middleIndex = Math.floor(sortedVotes.length / 2)
+  const median = sortedVotes.length % 2 === 0
+    ? ((sortedVotes[middleIndex - 1] + sortedVotes[middleIndex]) / 2).toFixed(1)
+    : sortedVotes[middleIndex]
   const mode = numericVotes.sort((a, b) => 
     numericVotes.filter(v => v === a).length - numericVotes.filter(v => v === b).length
   ).pop()
@@ -461,7 +472,7 @@ const voteStatistics = computed(() => {
   const max = Math.max(...numericVotes)
   const range = min === max ? min.toString() : `${min}-${max}`
   
-  return { average, mode, range }
+  return { average, median, mode, range }
 })
 
 const selectedCoffeeEmojiSrc = computed(() => {
