@@ -6,6 +6,7 @@
 - log and store last 5 completed voting rounds per room with average, median, mode, and range
 - sync voting history through room state so late joiners see same historical round data
 - show recent rounds in non-disruptive collapsible dropdown inside the revealed results container
+- add gentle nudge action that pings only players who have not voted yet (`unreleased`, `2026-07-06`)
 
 ## 2026-06-23
 
