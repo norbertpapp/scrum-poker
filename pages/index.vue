@@ -244,6 +244,15 @@
         >
           Reveal Votes ({{ votedCount }}/{{ gameState.participants.length }})
         </button>
+
+        <button
+          v-if="!gameState.votesRevealed && pendingVotersCount > 0"
+          @click="handleSendPendingVotersNudge"
+          class="btn-secondary py-3 px-4 text-sm sm:text-base"
+          :title="`Gently nudge ${pendingVotersCount} player${pendingVotersCount === 1 ? '' : 's'} still waiting to vote`"
+        >
+          Gentle nudge ({{ pendingVotersCount }})
+        </button>
         
         <button
           v-if="gameState.votesRevealed"
@@ -416,6 +425,7 @@ const {
   revealVotes,
   resetVotes,
   sendPing,
+  sendPendingVotersNudge,
   kickParticipant,
   playerName,
   playerId,
@@ -470,6 +480,10 @@ const pokerCards = [
 // Computed properties
 const votedCount = computed(() => {
   return gameState.participants.filter(p => p.hasVoted).length
+})
+
+const pendingVotersCount = computed(() => {
+  return gameState.participants.filter(participant => !participant.hasVoted && participant.id !== playerId.value).length
 })
 
 const recentVotingHistory = computed(() => {
@@ -654,6 +668,14 @@ const handleResetVotes = () => {
 const handleSendPing = (emoji) => {
   sendPing(emoji)
   showEmojiPicker.value = false
+}
+
+const handleSendPendingVotersNudge = () => {
+  if (pendingVotersCount.value === 0) {
+    return
+  }
+
+  sendPendingVotersNudge('🔔')
 }
 
 const handleSelectCoffeeEmoji = (fileName) => {

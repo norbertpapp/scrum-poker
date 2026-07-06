@@ -170,6 +170,13 @@ export const useWebSocket = () => {
     sendMessage('SEND_PING', { emoji })
   }
 
+  const sendPendingVotersNudge = (emoji = '🔔') => {
+    sendMessage('SEND_PING', {
+      emoji,
+      pendingVotersOnly: true
+    })
+  }
+
   const changeName = (newName) => {
     sendMessage('CHANGE_NAME', { newName })
   }
@@ -203,6 +210,7 @@ export const useWebSocket = () => {
     revealVotes,
     resetVotes,
     sendPing,
+    sendPendingVotersNudge,
     changeName,
     kickParticipant
   }

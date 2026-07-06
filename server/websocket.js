@@ -239,21 +239,27 @@ class ScrumPokerServer {
     const clientInfo = this.clients.get(ws);
     if (!clientInfo) return;
     
-    const { roomCode, playerName } = clientInfo;
+    const { roomCode, playerName, playerId } = clientInfo;
     const room = this.rooms.get(roomCode);
     
     if (room) {
+      const pingEmoji = typeof message?.data?.emoji === 'string' ? message.data.emoji : '🔔';
+      const targetPendingVotersOnly = Boolean(message?.data?.pendingVotersOnly);
       const pingMessage = {
         type: 'PING_RECEIVED',
         data: {
-          emoji: message.data.emoji,
+          emoji: pingEmoji,
           fromPlayer: playerName,
           timestamp: Date.now()
         }
       };
       
-      // Send ping to all participants in the room
+      // Send ping to all participants in the room, or only pending voters when requested.
       room.participants.forEach(participant => {
+        if (targetPendingVotersOnly && (participant.hasVoted || participant.id === playerId)) {
+          return;
+        }
+
         if (participant.ws.readyState === 1) { // WebSocket.OPEN
           participant.ws.send(JSON.stringify(pingMessage));
         }

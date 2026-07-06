@@ -28,6 +28,7 @@ export const usePokerSession = () => {
     revealVotes,
     resetVotes,
     sendPing,
+    sendPendingVotersNudge,
     changeName,
     kickParticipant
   } = useWebSocket()
@@ -142,6 +143,7 @@ export const usePokerSession = () => {
     revealVotes,
     resetVotes,
     sendPing,
+    sendPendingVotersNudge,
     kickParticipant,
     playerName,
     playerId,
