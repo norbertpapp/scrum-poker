@@ -370,8 +370,8 @@
         :key="ping.id"
         class="absolute animate-ping-float"
         :style="{
-          left: Math.random() * 80 + 10 + '%',
-          top: Math.random() * 60 + 20 + '%'
+          left: ping.left,
+          top: ping.top
         }"
       >
         <div class="bg-white rounded-full shadow-lg px-3 py-2 flex items-center space-x-2 dark:bg-gray-800 dark:border dark:border-gray-700">

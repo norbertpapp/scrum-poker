@@ -114,11 +114,16 @@ export const useWebSocket = () => {
   }
 
   const handlePingReceived = (data) => {
+    const left = `${Math.random() * 80 + 10}%`
+    const top = `${Math.random() * 60 + 20}%`
+
     pings.value.push({
       id: Date.now() + Math.random(),
       emoji: data.emoji,
       fromPlayer: data.fromPlayer,
-      timestamp: data.timestamp
+      timestamp: data.timestamp,
+      left,
+      top
     })
 
     // Remove ping after 3 seconds
