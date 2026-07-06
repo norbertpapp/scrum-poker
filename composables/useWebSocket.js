@@ -7,7 +7,8 @@ const gameState = reactive({
   roomJoined: false,
   roomCode: '',
   participants: [],
-  votesRevealed: false
+  votesRevealed: false,
+  votingHistory: []
 })
 let reconnectTimeout = null
 let activeConsumers = 0
@@ -100,6 +101,7 @@ export const useWebSocket = () => {
     gameState.roomJoined = false
     gameState.participants = []
     gameState.votesRevealed = false
+    gameState.votingHistory = []
     gameState.roomCode = ''
   }
 
@@ -107,6 +109,7 @@ export const useWebSocket = () => {
     gameState.roomCode = data.roomCode
     gameState.participants = data.participants
     gameState.votesRevealed = data.votesRevealed
+    gameState.votingHistory = data.votingHistory || []
     gameState.roomJoined = true
   }
 

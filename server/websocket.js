@@ -1,9 +1,83 @@
 import { WebSocketServer } from 'ws';
 
+const VOTING_HISTORY_LIMIT = 5;
+
 class ScrumPokerServer {
   constructor() {
     this.rooms = new Map();
     this.clients = new Map();
+  }
+
+  calculateVoteStatistics(votes) {
+    if (votes.length === 0) {
+      return { average: 'N/A', median: 'N/A', mode: 'N/A', range: 'N/A' };
+    }
+
+    if (votes.length === 1) {
+      const singleVote = votes[0];
+      return {
+        average: singleVote.toString(),
+        median: singleVote.toString(),
+        mode: singleVote,
+        range: singleVote.toString()
+      };
+    }
+
+    const sortedVotes = [...votes].sort((a, b) => a - b);
+    const average = (sortedVotes.reduce((sum, vote) => sum + vote, 0) / sortedVotes.length).toFixed(1);
+    const middleIndex = Math.floor(sortedVotes.length / 2);
+    const median = sortedVotes.length % 2 === 0
+      ? ((sortedVotes[middleIndex - 1] + sortedVotes[middleIndex]) / 2).toFixed(1)
+      : sortedVotes[middleIndex].toString();
+
+    const voteCountByValue = new Map();
+    sortedVotes.forEach((vote) => {
+      voteCountByValue.set(vote, (voteCountByValue.get(vote) || 0) + 1);
+    });
+
+    let mode = sortedVotes[0];
+    let modeCount = 0;
+    voteCountByValue.forEach((count, vote) => {
+      if (count > modeCount || (count === modeCount && vote < mode)) {
+        mode = vote;
+        modeCount = count;
+      }
+    });
+
+    const min = sortedVotes[0];
+    const max = sortedVotes[sortedVotes.length - 1];
+    const range = min === max ? min.toString() : `${min}-${max}`;
+
+    return {
+      average,
+      median,
+      mode,
+      range
+    };
+  }
+
+  recordVotingRound(room) {
+    const votedParticipants = Array.from(room.participants.values()).filter((participant) => participant.hasVoted);
+    if (votedParticipants.length === 0) {
+      return;
+    }
+
+    const numericVotes = votedParticipants
+      .map((participant) => participant.vote)
+      .filter((vote) => typeof vote === 'number' && !Number.isNaN(vote));
+
+    const statistics = this.calculateVoteStatistics(numericVotes);
+
+    room.roundCounter += 1;
+    room.votingHistory.unshift({
+      roundNumber: room.roundCounter,
+      revealedAt: Date.now(),
+      participantsCount: room.participants.size,
+      votesCast: votedParticipants.length,
+      numericVotesCount: numericVotes.length,
+      statistics
+    });
+    room.votingHistory = room.votingHistory.slice(0, VOTING_HISTORY_LIMIT);
   }
 
   handleKickParticipant(ws, message) {
@@ -113,7 +187,9 @@ class ScrumPokerServer {
       this.rooms.set(roomCode, {
         code: roomCode,
         participants: new Map(),
-        votesRevealed: false
+        votesRevealed: false,
+        votingHistory: [],
+        roundCounter: 0
       });
     }
     
@@ -238,6 +314,10 @@ class ScrumPokerServer {
     const room = this.rooms.get(roomCode);
     
     if (room) {
+      if (room.votesRevealed) {
+        this.recordVotingRound(room);
+      }
+
       room.votesRevealed = false;
 
       // Reset all participant votes
@@ -293,7 +373,8 @@ class ScrumPokerServer {
       data: {
         roomCode: room.code,
         participants,
-        votesRevealed: room.votesRevealed
+        votesRevealed: room.votesRevealed,
+        votingHistory: room.votingHistory
       }
     };
     

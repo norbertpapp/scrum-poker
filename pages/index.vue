@@ -91,6 +91,31 @@
             <div class="text-sm text-gray-500 dark:text-gray-400">Range</div>
           </div>
         </div>
+
+        <div v-if="recentVotingHistory.length" class="mt-6">
+          <details class="group rounded-xl border border-gray-200/80 bg-white/70 px-4 py-3 text-sm shadow-sm dark:border-gray-700 dark:bg-gray-800/60">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-gray-700 dark:text-gray-200">
+              <span class="font-medium">📜 Recent rounds (last {{ recentVotingHistory.length }})</span>
+              <span class="text-xs text-gray-500 transition-transform duration-200 group-open:rotate-180 dark:text-gray-400">▼</span>
+            </summary>
+
+            <div class="mt-3 divide-y divide-gray-200 dark:divide-gray-700">
+              <div
+                v-for="round in recentVotingHistory"
+                :key="round.roundNumber"
+                class="flex flex-col gap-1 py-2 text-gray-600 dark:text-gray-300 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div class="font-medium text-gray-700 dark:text-gray-200">
+                  Round #{{ round.roundNumber }} · {{ formatVotingRoundTime(round.revealedAt) }}
+                </div>
+                <div class="text-xs sm:text-sm">
+                  Avg {{ round.statistics.average }}, Median {{ round.statistics.median }}, Mode {{ round.statistics.mode }}, Range {{ round.statistics.range }}
+                  <span class="text-gray-500 dark:text-gray-400"> · {{ round.votesCast }}/{{ round.participantsCount }} voted</span>
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
       </div>
 
       <!-- Participants -->
@@ -447,6 +472,10 @@ const votedCount = computed(() => {
   return gameState.participants.filter(p => p.hasVoted).length
 })
 
+const recentVotingHistory = computed(() => {
+  return (gameState.votingHistory || []).slice(0, 5)
+})
+
 const voteStatistics = computed(() => {
   if (!gameState.votesRevealed) return { average: 0, median: 0, mode: 0, range: '0-0' }
   
@@ -671,6 +700,14 @@ const handleKickParticipant = (participant) => {
   }
 
   kickParticipant(participant.id)
+}
+
+const formatVotingRoundTime = (timestamp) => {
+  if (!timestamp) {
+    return 'Unknown time'
+  }
+
+  return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
 // Meta
