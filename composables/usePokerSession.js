@@ -5,6 +5,7 @@ const PLAYER_NAME_KEY = 'scrum-poker-player-name'
 const GENERIC_PLAYER_NAME_PREFIX = 'Player'
 let sideEffectsInitialized = false
 let playerNameHydrated = false
+let autoJoinSuppressed = false
 
 export const usePokerSession = () => {
   const route = useRoute()
@@ -66,6 +67,10 @@ export const usePokerSession = () => {
     watch(() => route.params.roomCode, (routeRoomCode) => {
       const nextRoomCode = resolveRouteRoomCode(routeRoomCode)
 
+      if (!nextRoomCode) {
+        autoJoinSuppressed = false
+      }
+
       if (!gameState.roomJoined && nextRoomCode && roomCode.value !== nextRoomCode) {
         roomCode.value = nextRoomCode
       }
@@ -86,7 +91,7 @@ export const usePokerSession = () => {
       [connected, () => route.params.roomCode, () => gameState.roomJoined],
       ([isConnected, routeRoomCode, roomJoined]) => {
         const targetRoomCode = resolveRouteRoomCode(routeRoomCode).trim()
-        if (!isConnected || roomJoined || !targetRoomCode) {
+        if (!isConnected || roomJoined || !targetRoomCode || autoJoinSuppressed) {
           return
         }
 
@@ -116,6 +121,7 @@ export const usePokerSession = () => {
   }
 
   const handleLeaveRoom = () => {
+    autoJoinSuppressed = true
     leaveRoom()
     roomCode.value = ''
     editingName.value = false
