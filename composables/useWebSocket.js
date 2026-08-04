@@ -12,6 +12,7 @@ const gameState = reactive({
 })
 let reconnectTimeout = null
 let activeConsumers = 0
+let lastJoin = null
 
 export const useWebSocket = () => {
   const runtimeConfig = useRuntimeConfig()
@@ -33,6 +34,10 @@ export const useWebSocket = () => {
       ws.value.onopen = () => {
         connected.value = true
         console.log('Connected to WebSocket server')
+
+        if (lastJoin) {
+          sendMessage('JOIN_ROOM', lastJoin)
+        }
       }
 
       ws.value.onmessage = (event) => {
@@ -103,6 +108,7 @@ export const useWebSocket = () => {
     gameState.votesRevealed = false
     gameState.votingHistory = []
     gameState.roomCode = ''
+    pings.value = []
   }
 
   const updateGameState = (data) => {
@@ -116,23 +122,25 @@ export const useWebSocket = () => {
   const handlePingReceived = (data) => {
     const left = `${Math.random() * 80 + 10}%`
     const top = `${Math.random() * 60 + 20}%`
-
-    pings.value.push({
-      id: Date.now() + Math.random(),
+    const ping = {
+      id: `${Date.now()}-${Math.random()}`,
       emoji: data.emoji,
       fromPlayer: data.fromPlayer,
       timestamp: data.timestamp,
       left,
       top
-    })
+    }
+
+    pings.value.push(ping)
 
     // Remove ping after 3 seconds
     setTimeout(() => {
-      pings.value = pings.value.filter(ping => ping.timestamp !== data.timestamp)
+      pings.value = pings.value.filter(currentPing => currentPing.id !== ping.id)
     }, 3000)
   }
 
   const handleKicked = (data) => {
+    lastJoin = null
     resetRoomState()
 
     if (import.meta.client && data?.reason) {
@@ -142,10 +150,12 @@ export const useWebSocket = () => {
 
   // Room actions
   const joinRoom = (roomCode, playerName, playerId) => {
-    sendMessage('JOIN_ROOM', { roomCode, playerName, playerId })
+    lastJoin = { roomCode, playerName, playerId }
+    sendMessage('JOIN_ROOM', lastJoin)
   }
 
   const leaveRoom = () => {
+    lastJoin = null
     sendMessage('LEAVE_ROOM', {})
     resetRoomState()
   }
@@ -178,6 +188,10 @@ export const useWebSocket = () => {
   }
 
   const changeName = (newName) => {
+    if (lastJoin) {
+      lastJoin.playerName = newName
+    }
+
     sendMessage('CHANGE_NAME', { newName })
   }
 

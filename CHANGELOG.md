@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-05
+
+### Fixes
+- fix repeated nudge cleanup and room rejoin after reconnect (`unreleased`, `2026-08-05`)
+
 ## 2026-07-06
 
 ### Features
