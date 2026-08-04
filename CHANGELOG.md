@@ -4,6 +4,11 @@
 
 ### Fixes
 - fix repeated nudge cleanup and room rejoin after reconnect (`unreleased`, `2026-08-05`)
+- fix auto-join room with generic player name when name empty (`92f975c`, `2026-08-05`)
+- fix websocket reconnect fail (`a79c2bf`, `2026-08-05`)
+
+### Style
+- remove sytem theme setting (`ff892c0`, `2026-08-05`)
 
 ## 2026-07-06
 
