@@ -2,6 +2,7 @@ import { nextTick, watch } from 'vue'
 import { useWebSocket } from '~/composables/useWebSocket'
 
 const PLAYER_NAME_KEY = 'scrum-poker-player-name'
+const GENERIC_PLAYER_NAME_PREFIX = 'Player'
 let sideEffectsInitialized = false
 let playerNameHydrated = false
 
@@ -15,6 +16,10 @@ export const usePokerSession = () => {
       return routeRoomCode[0] || ''
     }
     return routeRoomCode || ''
+  }
+
+  const getGenericPlayerName = (id) => {
+    return `${GENERIC_PLAYER_NAME_PREFIX}-${id.slice(-4)}`
   }
 
   const {
@@ -44,8 +49,8 @@ export const usePokerSession = () => {
   if (import.meta.client && !playerNameHydrated) {
     playerNameHydrated = true
     const savedName = localStorage.getItem(PLAYER_NAME_KEY)
-    if (savedName) {
-      playerName.value = savedName
+    if (savedName && savedName.trim()) {
+      playerName.value = savedName.trim()
     }
   }
 
@@ -76,6 +81,24 @@ export const usePokerSession = () => {
         router.replace({ path: `/${encodeURIComponent(newRoomCode)}` })
       }
     })
+
+    watch(
+      [connected, () => route.params.roomCode, () => gameState.roomJoined],
+      ([isConnected, routeRoomCode, roomJoined]) => {
+        const targetRoomCode = resolveRouteRoomCode(routeRoomCode).trim()
+        if (!isConnected || roomJoined || !targetRoomCode) {
+          return
+        }
+
+        if (!playerName.value.trim()) {
+          playerName.value = getGenericPlayerName(playerId.value)
+        }
+
+        roomCode.value = targetRoomCode
+        joinRoom(targetRoomCode, playerName.value.trim(), playerId.value)
+      },
+      { immediate: true }
+    )
   }
 
   const generateRoomCode = () => {
