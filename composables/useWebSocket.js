@@ -10,15 +10,30 @@ const gameState = reactive({
   votesRevealed: false,
   votingHistory: []
 })
+const RECONNECT_DELAY_MS = 3000
 let reconnectTimeout = null
 let activeConsumers = 0
 let lastJoin = null
+let reconnectQueuedWhileHidden = false
+let intentionalDisconnect = false
+let visibilityListenerAttached = false
+let visibilityChangeHandler = null
+
+const clearReconnectTimeout = () => {
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout)
+    reconnectTimeout = null
+  }
+}
 
 export const useWebSocket = () => {
   const runtimeConfig = useRuntimeConfig()
 
   const connect = () => {
     if (!import.meta.client) return
+    intentionalDisconnect = false
+    clearReconnectTimeout()
+
     if (ws.value && (ws.value.readyState === WebSocket.OPEN || ws.value.readyState === WebSocket.CONNECTING)) {
       return
     }
@@ -33,6 +48,7 @@ export const useWebSocket = () => {
 
       ws.value.onopen = () => {
         connected.value = true
+        reconnectQueuedWhileHidden = false
         console.log('Connected to WebSocket server')
 
         if (lastJoin) {
@@ -50,15 +66,26 @@ export const useWebSocket = () => {
       }
 
       ws.value.onclose = () => {
+        ws.value = null
         connected.value = false
         console.log('Disconnected from WebSocket server')
 
-        // Attempt to reconnect after 3 seconds
+        if (intentionalDisconnect || activeConsumers === 0) {
+          return
+        }
+
+        if (document.hidden) {
+          reconnectQueuedWhileHidden = true
+          return
+        }
+
         reconnectTimeout = setTimeout(() => {
-          if (!connected.value && activeConsumers > 0) {
+          reconnectTimeout = null
+
+          if (!connected.value && activeConsumers > 0 && !document.hidden) {
             connect()
           }
-        }, 3000)
+        }, RECONNECT_DELAY_MS)
       }
 
       ws.value.onerror = (error) => {
@@ -70,15 +97,30 @@ export const useWebSocket = () => {
   }
 
   const disconnect = () => {
-    if (reconnectTimeout) {
-      clearTimeout(reconnectTimeout)
-      reconnectTimeout = null
-    }
+    intentionalDisconnect = true
+    reconnectQueuedWhileHidden = false
+    clearReconnectTimeout()
 
     if (ws.value) {
-      ws.value.close()
+      const currentSocket = ws.value
       ws.value = null
+
+      if (currentSocket.readyState === WebSocket.OPEN || currentSocket.readyState === WebSocket.CONNECTING) {
+        currentSocket.close()
+      }
+
       connected.value = false
+    }
+  }
+
+  const handleVisibilityChange = () => {
+    if (!import.meta.client || document.hidden) {
+      return
+    }
+
+    if (reconnectQueuedWhileHidden || (!connected.value && activeConsumers > 0)) {
+      reconnectQueuedWhileHidden = false
+      connect()
     }
   }
 
@@ -202,6 +244,13 @@ export const useWebSocket = () => {
   onMounted(() => {
     if (typeof window !== 'undefined') {
       activeConsumers += 1
+
+      if (!visibilityListenerAttached) {
+        visibilityChangeHandler = handleVisibilityChange
+        document.addEventListener('visibilitychange', visibilityChangeHandler)
+        visibilityListenerAttached = true
+      }
+
       connect()
     }
   })
@@ -209,6 +258,13 @@ export const useWebSocket = () => {
   onUnmounted(() => {
     activeConsumers = Math.max(0, activeConsumers - 1)
     if (activeConsumers === 0) {
+      if (visibilityListenerAttached) {
+        if (visibilityChangeHandler) {
+          document.removeEventListener('visibilitychange', visibilityChangeHandler)
+        }
+        visibilityChangeHandler = null
+        visibilityListenerAttached = false
+      }
       disconnect()
     }
   })
@@ -230,5 +286,3 @@ export const useWebSocket = () => {
   }
 
 }
-
-
