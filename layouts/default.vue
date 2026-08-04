@@ -21,13 +21,6 @@
               {{ isDarkTheme ? '☀️ Light' : '🌙 Dark' }}
             </button>
 
-            <button
-              class="btn-secondary h-10"
-              @click="setThemeMode('system')"
-            >
-              🖥️ System
-            </button>
-
             <template v-if="gameState.roomJoined">
             <div class="rounded-lg bg-gray-50 px-3 py-1.5 text-right dark:bg-gray-800">
               <p class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-100">Room: {{ gameState.roomCode }}</p>
