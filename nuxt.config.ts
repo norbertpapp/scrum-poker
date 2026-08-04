@@ -1,4 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const appBaseUrl = process.env.NUXT_APP_BASE_URL || '/'
+const normalizedBaseUrl = appBaseUrl.endsWith('/') ? appBaseUrl : `${appBaseUrl}/`
+
 export default defineNuxtConfig({
   app: {
     head: {
@@ -7,7 +10,7 @@ export default defineNuxtConfig({
         lang: 'en',
       },
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.png' },
+        { rel: 'icon', type: 'image/png', href: `${normalizedBaseUrl}favicon.png` },
       ]
     }
   },
@@ -22,5 +25,4 @@ export default defineNuxtConfig({
   }
 
 })
-
 
