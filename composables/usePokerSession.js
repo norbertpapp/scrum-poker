@@ -1,11 +1,24 @@
-import { nextTick, watch } from 'vue'
+import { computed, nextTick, watch } from 'vue'
 import { useWebSocket } from '~/composables/useWebSocket'
 
 const PLAYER_NAME_KEY = 'scrum-poker-player-name'
+const PLAYER_ID_KEY = 'scrum-poker-player-id'
 const GENERIC_PLAYER_NAME_PREFIX = 'Player'
+const PLAYER_ID_CHECK_MS = 200
+const createPlayerId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
 let sideEffectsInitialized = false
 let playerNameHydrated = false
+let playerIdHydrated = false
 let autoJoinSuppressed = false
+let playerIdChannel = null
+let playerIdCheckTimeout = null
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    playerIdChannel?.close()
+    clearTimeout(playerIdCheckTimeout)
+  })
+}
 
 export const usePokerSession = () => {
   const route = useRoute()
@@ -24,7 +37,7 @@ export const usePokerSession = () => {
   }
 
   const {
-    connected,
+    connected: socketConnected,
     gameState,
     pings,
     joinRoom,
@@ -43,9 +56,45 @@ export const usePokerSession = () => {
   const roomCode = useState('scrum-poker-room-code', () => {
     return resolveRouteRoomCode(route.params.roomCode)
   })
-  const playerId = useState('scrum-poker-player-id', () => Date.now().toString())
+  const playerId = useState(PLAYER_ID_KEY, () => '')
+  const playerIdReady = useState('scrum-poker-player-id-ready', () => false)
+  const connected = computed(() => socketConnected.value && playerIdReady.value)
   const editingName = useState('scrum-poker-editing-name', () => false)
   const newPlayerName = useState('scrum-poker-new-player-name', () => '')
+
+  if (import.meta.client && !playerIdHydrated) {
+    playerIdHydrated = true
+    playerIdReady.value = false
+    const savedId = sessionStorage.getItem(PLAYER_ID_KEY)
+    playerId.value = savedId || createPlayerId()
+    if (!savedId) {
+      sessionStorage.setItem(PLAYER_ID_KEY, playerId.value)
+    }
+
+    if (typeof BroadcastChannel === 'undefined') {
+      playerIdReady.value = true
+    } else {
+      playerIdChannel = new BroadcastChannel(PLAYER_ID_KEY)
+      const requestId = createPlayerId()
+      playerIdChannel.onmessage = ({ data }) => {
+        if (data?.type === 'check' && data.playerId === playerId.value) {
+          playerIdChannel.postMessage({ type: 'in-use', requestId: data.requestId, playerId: data.playerId })
+        } else if (data?.type === 'in-use' && data.requestId === requestId && data.playerId === playerId.value && !playerIdReady.value) {
+          clearTimeout(playerIdCheckTimeout)
+          playerId.value = createPlayerId()
+          sessionStorage.setItem(PLAYER_ID_KEY, playerId.value)
+          playerIdReady.value = true
+        }
+      }
+
+      if (savedId) {
+        playerIdChannel.postMessage({ type: 'check', requestId, playerId: savedId })
+        playerIdCheckTimeout = setTimeout(() => { playerIdReady.value = true }, PLAYER_ID_CHECK_MS)
+      } else {
+        playerIdReady.value = true
+      }
+    }
+  }
 
   if (import.meta.client && !playerNameHydrated) {
     playerNameHydrated = true
