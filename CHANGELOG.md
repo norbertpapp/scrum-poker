@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-03
+
+### Fixes
+- keep idle WebSocket connections alive with server heartbeat pings (`d2687eb`, `2026-10-03`)
+- preserve votes and voting history on reconnect; retain disconnected room state for 15 minutes while the server runs (`d2687eb`, `2026-10-03`)
+- show disconnected participants as offline and exclude them from pending-voter nudges (`d2687eb`, `2026-10-03`)
+
 ## 2026-08-05
 
 ### Fixes
