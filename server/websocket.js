@@ -1,11 +1,14 @@
+import { pathToFileURL } from 'node:url';
 import { WebSocketServer } from 'ws';
 
 const VOTING_HISTORY_LIMIT = 5;
 
-class ScrumPokerServer {
-  constructor() {
+export class ScrumPokerServer {
+  constructor({ disconnectGraceMs = 15 * 60 * 1000, heartbeatIntervalMs = 30 * 1000 } = {}) {
     this.rooms = new Map();
     this.clients = new Map();
+    this.disconnectGraceMs = disconnectGraceMs;
+    this.heartbeatIntervalMs = heartbeatIntervalMs;
   }
 
   calculateVoteStatistics(votes) {
@@ -93,6 +96,7 @@ class ScrumPokerServer {
     const targetParticipant = room.participants.get(targetPlayerId);
     if (!targetParticipant) return;
 
+    clearTimeout(targetParticipant.disconnectTimer);
     room.participants.delete(targetPlayerId);
 
     let targetSocket = null;
@@ -129,6 +133,8 @@ class ScrumPokerServer {
     
     this.wss.on('connection', (ws) => {
       console.log('New client connected');
+      ws.isAlive = true;
+      ws.on('pong', () => { ws.isAlive = true; });
       
       ws.on('message', (data) => {
         try {
@@ -143,6 +149,20 @@ class ScrumPokerServer {
         this.handleDisconnect(ws);
       });
     });
+
+    const heartbeat = setInterval(() => {
+      this.wss.clients.forEach((ws) => {
+        if (ws.readyState !== 1) return;
+        if (!ws.isAlive) {
+          ws.terminate();
+          return;
+        }
+        ws.isAlive = false;
+        ws.ping();
+      });
+    }, this.heartbeatIntervalMs);
+    heartbeat.unref();
+    this.wss.on('close', () => clearInterval(heartbeat));
     
     console.log(`WebSocket server running on port ${port}`);
   }
@@ -181,6 +201,10 @@ class ScrumPokerServer {
   
   handleJoinRoom(ws, message) {
     const { roomCode, playerName, playerId } = message.data;
+    const previousInfo = this.clients.get(ws);
+    if (previousInfo && (previousInfo.roomCode !== roomCode || previousInfo.playerId !== playerId)) {
+      this.handleLeaveRoom(ws, {});
+    }
     
     // Create room if it doesn't exist
     if (!this.rooms.has(roomCode)) {
@@ -194,14 +218,22 @@ class ScrumPokerServer {
     }
     
     const room = this.rooms.get(roomCode);
+    const previousParticipant = room.participants.get(playerId);
+    if (previousParticipant) {
+      clearTimeout(previousParticipant.disconnectTimer);
+      if (previousParticipant.ws && previousParticipant.ws !== ws) {
+        this.clients.delete(previousParticipant.ws);
+        previousParticipant.ws.close(4000, 'Connection replaced');
+      }
+    }
     
     // Add participant to room
     room.participants.set(playerId, {
       id: playerId,
       name: playerName,
-      hasVoted: false,
-      vote: null,
-      ws: ws
+      hasVoted: previousParticipant?.hasVoted ?? false,
+      vote: previousParticipant?.vote ?? null,
+      ws
     });
     
     // Store client info
@@ -221,13 +253,17 @@ class ScrumPokerServer {
     const room = this.rooms.get(roomCode);
     
     if (room) {
-      room.participants.delete(playerId);
-      
-      // Remove room if empty
-      if (room.participants.size === 0) {
-        this.rooms.delete(roomCode);
-      } else {
-        this.broadcastRoomState(roomCode);
+      const participant = room.participants.get(playerId);
+      if (participant?.ws === ws) {
+        clearTimeout(participant.disconnectTimer);
+        room.participants.delete(playerId);
+
+        // Remove room if empty
+        if (room.participants.size === 0) {
+          this.rooms.delete(roomCode);
+        } else {
+          this.broadcastRoomState(roomCode);
+        }
       }
     }
     
@@ -260,7 +296,7 @@ class ScrumPokerServer {
           return;
         }
 
-        if (participant.ws.readyState === 1) { // WebSocket.OPEN
+        if (participant.ws?.readyState === 1) { // WebSocket.OPEN
           participant.ws.send(JSON.stringify(pingMessage));
         }
       });
@@ -358,9 +394,26 @@ class ScrumPokerServer {
 
   handleDisconnect(ws) {
     const clientInfo = this.clients.get(ws);
-    if (clientInfo) {
-      this.handleLeaveRoom(ws, {});
-    }
+    if (!clientInfo) return;
+
+    this.clients.delete(ws);
+    const { roomCode, playerId } = clientInfo;
+    const room = this.rooms.get(roomCode);
+    const participant = room?.participants.get(playerId);
+    if (participant?.ws !== ws) return;
+
+    participant.ws = null;
+    participant.disconnectTimer = setTimeout(() => {
+      if (room.participants.get(playerId) !== participant || participant.ws) return;
+      room.participants.delete(playerId);
+      if (room.participants.size === 0) {
+        this.rooms.delete(roomCode);
+      } else {
+        this.broadcastRoomState(roomCode);
+      }
+    }, this.disconnectGraceMs);
+    participant.disconnectTimer.unref();
+    this.broadcastRoomState(roomCode);
   }
   
   broadcastRoomState(roomCode) {
@@ -371,6 +424,7 @@ class ScrumPokerServer {
       id: p.id,
       name: p.name,
       hasVoted: p.hasVoted,
+      connected: p.ws?.readyState === 1,
       vote: room.votesRevealed ? p.vote : null
     }));
     
@@ -386,7 +440,7 @@ class ScrumPokerServer {
     
     // Send to all participants in the room
     room.participants.forEach(participant => {
-      if (participant.ws.readyState === 1) { // WebSocket.OPEN
+      if (participant.ws?.readyState === 1) { // WebSocket.OPEN
         participant.ws.send(JSON.stringify(roomState));
       }
     });
@@ -394,5 +448,7 @@ class ScrumPokerServer {
 }
 
 // Start the server
-const server = new ScrumPokerServer();
-server.start(8080);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const server = new ScrumPokerServer();
+  server.start(8080);
+}

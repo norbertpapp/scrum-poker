@@ -44,9 +44,12 @@ export const useWebSocket = () => {
       const wsUrl = runtimeConfig.public.wsUrl || `${wsProtocol}://${wsHost}`
       if (!wsUrl) return
 
-      ws.value = new WebSocket(wsUrl)
+      const socket = new WebSocket(wsUrl)
+      ws.value = socket
+      connected.value = false
 
-      ws.value.onopen = () => {
+      socket.onopen = () => {
+        if (ws.value !== socket) return
         connected.value = true
         reconnectQueuedWhileHidden = false
         console.log('Connected to WebSocket server')
@@ -56,7 +59,8 @@ export const useWebSocket = () => {
         }
       }
 
-      ws.value.onmessage = (event) => {
+      socket.onmessage = (event) => {
+        if (ws.value !== socket) return
         try {
           const message = JSON.parse(event.data)
           handleMessage(message)
@@ -65,10 +69,11 @@ export const useWebSocket = () => {
         }
       }
 
-      ws.value.onclose = () => {
+      socket.onclose = (event) => {
+        if (ws.value !== socket) return
         ws.value = null
         connected.value = false
-        console.log('Disconnected from WebSocket server')
+        console.log('Disconnected from WebSocket server', event.code)
 
         if (intentionalDisconnect || activeConsumers === 0) {
           return
@@ -88,8 +93,8 @@ export const useWebSocket = () => {
         }, RECONNECT_DELAY_MS)
       }
 
-      ws.value.onerror = (error) => {
-        console.error('WebSocket error:', error)
+      socket.onerror = (error) => {
+        if (ws.value === socket) console.error('WebSocket error:', error)
       }
     } catch (error) {
       console.error('Failed to connect to WebSocket:', error)

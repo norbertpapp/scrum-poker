@@ -167,7 +167,8 @@
             <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate hover-me">{{ participant.name }}</p>
             <span class="tooltip full-name">{{ participant.name }}</span>
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              <span v-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500">Waiting...</span>
+              <span v-if="participant.connected === false" class="text-gray-400 dark:text-gray-500">Offline</span>
+              <span v-else-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500">Waiting...</span>
               <span v-else-if="!gameState.votesRevealed" class="text-primary-600">✓ Voted</span>
               <span v-else class="font-bold text-lg text-gray-900 dark:text-gray-100">
                 <img
@@ -203,7 +204,8 @@
               <tr v-for="participant in gameState.participants" :key="participant.id" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
                 <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">{{ participant.name }}</td>
                 <td class="px-4 py-3 text-sm">
-                  <span v-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500">Waiting...</span>
+                  <span v-if="participant.connected === false" class="text-gray-400 dark:text-gray-500">Offline</span>
+                  <span v-else-if="!participant.hasVoted" class="text-gray-400 dark:text-gray-500">Waiting...</span>
                   <span v-else class="text-primary-600">Voted</span>
                 </td>
                 <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -483,7 +485,7 @@ const votedCount = computed(() => {
 })
 
 const pendingVotersCount = computed(() => {
-  return gameState.participants.filter(participant => !participant.hasVoted && participant.id !== playerId.value).length
+  return gameState.participants.filter(participant => participant.connected !== false && !participant.hasVoted && participant.id !== playerId.value).length
 })
 
 const recentVotingHistory = computed(() => {

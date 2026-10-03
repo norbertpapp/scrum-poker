@@ -18,17 +18,17 @@
               class="btn-secondary h-10"
               @click="toggleTheme"
             >
-              {{ isDarkTheme ? '☀️ Light' : '🌙 Dark' }}
+              {{ isDarkTheme ? '☀️' : '🌙' }}
             </button>
 
             <template v-if="gameState.roomJoined">
-            <div class="rounded-lg bg-gray-50 px-3 py-1.5 text-right dark:bg-gray-800">
+            <div class="rounded-lg bg-gray-50 px-3 py-1.5 text-left dark:bg-gray-800 h-10">
               <p class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-100">Room: {{ gameState.roomCode }}</p>
               <p class="text-xs leading-tight text-gray-500 dark:text-gray-400">{{ gameState.participants.length }} participants</p>
             </div>
 
-            <div class="flex items-center gap-1 rounded-lg bg-gray-50 px-3 py-1.5 dark:bg-gray-800">
-              <span class="text-sm text-gray-500 dark:text-gray-400">You:</span>
+            <div class="flex items-center gap-1 rounded-lg bg-gray-50 px-3 py-1.5 dark:bg-gray-800 h-10">
+              <span class="text-sm text-gray-500 dark:text-gray-400">👤</span>
               <input
                 v-if="editingName"
                 ref="nameInput"
